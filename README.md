@@ -1,2 +1,2 @@
-# congrrgazione-bologna-fr
+# congregazione-bologna-fr
 rapport BO FR
