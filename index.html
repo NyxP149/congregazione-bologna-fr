@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rapporto Congregazione – Bologna FR</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#0a0b10;--surface:#12141c;--surface2:#1a1d2a;--surface3:#222638;
+  --border:#2d3148;--accent:#818cf8;--accent2:#fb7185;--accent3:#34d399;
+  --accent4:#fbbf24;--text:#e2e4f0;--muted:#6b7099;--muted2:#4a4f72;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;font-size:14px}
+.app{display:grid;grid-template-rows:auto auto auto 1fr;min-height:100vh}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.header-brand h1{font-size:1.1rem;font-weight:700;letter-spacing:-.02em}
+.header-brand h1 span{color:var(--accent)}
+.header-brand p{color:var(--muted);font-size:.75rem;margin-top:2px}
+.header-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* ── YEAR BAR ── */
+.year-bar{background:var(--surface2);border-bottom:1px solid var(--border);padding:8px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.year-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin-right:4px}
+.year-chip{padding:5px 14px;border-radius:20px;cursor:pointer;font-size:.8rem;font-weight:600;border:1px solid var(--border);color:var(--muted);background:var(--surface);transition:all .15s;display:flex;align-items:center;gap:6px;user-select:none}
+.year-chip:hover{border-color:var(--accent);color:var(--accent)}
+.year-chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.year-chip .del-year{font-size:.7rem;opacity:.7;cursor:pointer;padding:0 2px;border-radius:3px;margin-left:2px}
+.year-chip .del-year:hover{opacity:1;color:var(--accent2)}
+.year-add-btn{padding:5px 12px;border-radius:20px;cursor:pointer;font-size:.8rem;font-weight:600;border:1px dashed var(--muted2);color:var(--muted);background:transparent;transition:all .15s}
+.year-add-btn:hover{border-color:var(--accent3);color:var(--accent3)}
+
+/* ── MONTH NAV ── */
+.month-nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;display:flex;gap:2px;overflow-x:auto;align-items:stretch}
+.month-tab{padding:11px 16px;cursor:pointer;font-size:.8rem;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;user-select:none;display:flex;align-items:center;gap:6px}
+.month-tab:hover{color:var(--text)}
+.month-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.month-tab .del-month{font-size:.65rem;opacity:0;transition:opacity .15s;color:var(--accent2);cursor:pointer;padding:1px 3px;border-radius:3px}
+.month-tab:hover .del-month{opacity:1}
+.month-add-btn{padding:11px 14px;cursor:pointer;font-size:.8rem;font-weight:700;color:var(--muted2);border:none;background:none;white-space:nowrap;transition:color .15s;display:flex;align-items:center;gap:5px}
+.month-add-btn:hover{color:var(--accent3)}
+
+/* ── MAIN ── */
+.main{padding:24px;overflow-y:auto}
+.section-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.sec-tab{padding:7px 16px;border-radius:20px;cursor:pointer;font-size:.8rem;font-weight:600;border:1px solid var(--border);color:var(--muted);transition:all .15s}
+.sec-tab:hover{border-color:var(--accent);color:var(--accent)}
+.sec-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.stats-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex:1;min-width:110px}
+.stat .lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:600}
+.stat .val{font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:500;color:var(--accent);margin-top:3px}
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px}
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--surface2)}
+th{padding:10px 12px;text-align:left;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);white-space:nowrap}
+tbody tr{border-top:1px solid var(--border);transition:background .1s}
+tbody tr:hover{background:var(--surface2)}
+td{padding:8px 12px;vertical-align:middle}
+.ci{background:transparent;border:1px solid transparent;color:var(--text);font-family:'Inter',sans-serif;font-size:.85rem;width:100%;padding:4px 7px;border-radius:5px;transition:all .15s}
+.ci:focus{outline:none;background:var(--bg);border-color:var(--accent)}
+.ci-mono{font-family:'DM Mono',monospace;text-align:center}
+select.ci option{background:var(--surface2)}
+.num{font-family:'DM Mono',monospace;color:var(--muted);font-size:.75rem}
+.badge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:.68rem;font-weight:600;white-space:nowrap}
+.badge-PR{background:#1e3a5f;color:#60a5fa}
+.badge-PA{background:#14472a;color:#4ade80}
+.badge-PC{background:#3b2a1a;color:#fb923c}
+.badge-SF{background:#2d1a4a;color:#c084fc}
+.badge-IN{background:#2a1a1a;color:#f87171}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.card h3{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:12px}
+.field{margin-bottom:8px}
+.field label{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:3px}
+.field input{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:.88rem;padding:6px 9px;border-radius:6px;width:100%}
+.field input:focus{outline:none;border-color:var(--accent)}
+.field input[readonly]{color:var(--accent);font-weight:600}
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;font-size:.8rem;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#a5b4fc;transform:translateY(-1px)}
+.btn-success{background:var(--accent3);color:#022c22}.btn-success:hover{filter:brightness(1.1)}
+.btn-warning{background:var(--accent4);color:#1a0a00}.btn-warning:hover{filter:brightness(1.1)}
+.btn-danger{background:var(--accent2);color:#fff}.btn-danger:hover{filter:brightness(1.1)}
+.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.icon-btn{background:none;border:none;cursor:pointer;color:var(--muted);padding:3px 5px;border-radius:4px;transition:color .15s;font-size:.9rem;line-height:1}
+.icon-btn:hover{color:var(--accent2)}
+.add-form{background:var(--surface);border:1px dashed var(--muted2);border-radius:10px;padding:16px;margin-bottom:16px;display:none}
+.add-form.open{display:block}
+.add-form h4{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.fld label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:3px}
+.fld input,.fld select{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Inter',sans-serif;font-size:.85rem;padding:6px 9px;border-radius:6px;width:100%}
+.fld input:focus,.fld select:focus{outline:none;border-color:var(--accent)}
+#toast{position:fixed;bottom:20px;right:20px;background:var(--accent3);color:#022c22;padding:10px 18px;border-radius:8px;font-weight:700;font-size:.8rem;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;z-index:9999}
+#toast.show{opacity:1;transform:translateY(0)}
+.section-panel{display:none}.section-panel.active{display:block}
+
+/* ── FILTER BAR ── */
+.filter-bar{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.filter-bar-title{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.filter-row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+.filter-group{display:flex;flex-direction:column;gap:6px}
+.filter-group label{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.filter-chips{display:flex;gap:6px;flex-wrap:wrap}
+.fchip{padding:4px 12px;border-radius:16px;cursor:pointer;font-size:.75rem;font-weight:600;border:1px solid var(--border);color:var(--muted);background:var(--surface2);transition:all .15s;user-select:none;white-space:nowrap}
+.fchip:hover{border-color:var(--accent);color:var(--accent)}
+.fchip.active{color:#fff;border-color:transparent}
+.fchip.active.gc1{background:#1e3a5f}.fchip.active.gc2{background:#14472a}
+.fchip.active.gc3{background:#3b2a1a}.fchip.active.gc4{background:#2d1a4a}
+.fchip.active.gc5{background:#1a2a4a}.fchip.active.gc-other{background:#2a2a1a}
+.fchip.active.rc-PA{background:#14472a}.fchip.active.rc-PR{background:#1e3a5f}
+.fchip.active.rc-PC{background:#3b2a1a}.fchip.active.rc-SF{background:#2d1a4a}
+.fchip.active.rc-IN{background:#2a1a1a}
+.filter-reset{font-size:.7rem;color:var(--muted2);cursor:pointer;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:none;transition:all .15s}
+.filter-reset:hover{color:var(--accent2);border-color:var(--accent2)}
+.filter-count{font-size:.75rem;color:var(--muted);font-style:italic;margin-top:8px}
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;width:360px;max-width:90vw}
+.modal h2{font-size:1rem;font-weight:700;margin-bottom:6px}
+.modal p{font-size:.82rem;color:var(--muted);margin-bottom:20px}
+.modal .mfld{margin-bottom:14px}
+.modal .mfld label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:block;margin-bottom:5px}
+.modal .mfld input,.modal .mfld select{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:.9rem;padding:8px 12px;border-radius:8px;width:100%}
+.modal .mfld input:focus,.modal .mfld select:focus{outline:none;border-color:var(--accent)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:4px}
+
+/* ── AUTH ── */
+.auth-banner{background:var(--surface2);border-bottom:1px solid var(--border);padding:7px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:.78rem}
+.auth-banner .left{display:flex;align-items:center;gap:10px}
+.auth-status{display:flex;align-items:center;gap:6px;font-weight:600}
+.auth-dot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.auth-dot.editor{background:var(--accent3)}
+.lock-btn{padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.lock-btn:hover{border-color:var(--accent);color:var(--accent)}
+.edit-blocked{pointer-events:none;opacity:.45;user-select:none}
+.modal-bg.auth-modal .modal{max-width:340px}
+.pwd-input{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:1rem;padding:10px 14px;border-radius:8px;width:100%;letter-spacing:.1em}
+.pwd-input:focus{outline:none;border-color:var(--accent)}
+.pwd-error{color:var(--accent2);font-size:.78rem;margin-top:6px;display:none}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="header-brand">
+    <h1>Rapporto Congregazione <span>Bologna FR</span></h1>
+    <p>Modifica libera · Gestione anni e mesi · Esporta CSV e PDF · <span id="syncStatus" style="color:var(--muted)">⬤ locale</span></p>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost" onclick="openConfig()" title="Configura Google Sheets">⚙</button>
+    <button class="btn btn-ghost editor-only" onclick="toggleAddForm()">＋ Membro</button>
+    <button class="btn btn-primary editor-only" id="saveBtn" onclick="saveAll()" title="Salva su Google Sheets">☁ Salva</button>
+    <button class="btn btn-ghost" id="syncBtn" onclick="loadAll()" title="Ricarica da Google Sheets">↺ Sync</button>
+    <button class="btn btn-success" onclick="exportCSV()">⬇ CSV</button>
+    <button class="btn btn-warning" onclick="exportPDF()">⬇ PDF</button>
+  </div>
+</header>
+
+
+<!-- AUTH BANNER -->
+<div class="auth-banner" id="authBanner">
+  <div class="left">
+    <div class="auth-status">
+      <div class="auth-dot" id="authDot"></div>
+      <span id="authLabel">Modalità lettura</span>
+    </div>
+    <span style="color:var(--muted2)">·</span>
+    <span style="color:var(--muted);font-size:.74rem" id="authHint">Accedi come editore per modificare i dati</span>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="lock-btn" id="authBtn" onclick="openAuthModal()">🔐 Accesso Editor</button>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-bg auth-modal" id="modalAuth">
+  <div class="modal">
+    <h2 id="authModalTitle">🔐 Accesso Editor</h2>
+    <p id="authModalDesc">Inserisci la password per modificare e salvare i dati.</p>
+    <div class="mfld">
+      <label>Password</label>
+      <input class="pwd-input" id="pwdInput" type="password" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter') confirmAuth()">
+      <div class="pwd-error" id="pwdError">❌ Password errata — riprova</div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-ghost" onclick="closeModal('modalAuth')">Annulla</button>
+      <button class="btn btn-primary" onclick="confirmAuth()">Accedi</button>
+    </div>
+  </div>
+</div>
+
+<!-- YEAR BAR -->
+<div class="year-bar">
+  <span class="year-label">Anno:</span>
+  <div id="yearChips" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"></div>
+  <button class="year-add-btn" onclick="openAddYear()">＋ Aggiungi Anno</button>
+</div>
+
+<!-- MONTH NAV -->
+<nav class="month-nav" id="monthNav"></nav>
+
+<main class="main">
+  <div class="section-tabs">
+    <div class="sec-tab active" onclick="switchSec('membri',this)">👥 Membri</div>
+    <div class="sec-tab" onclick="switchSec('totali',this)">📊 Totali Categoria</div>
+    <div class="sec-tab" onclick="switchSec('presenze',this)">🏛 Presenze Adunanze</div>
+    <div class="sec-tab" onclick="switchSec('annuale',this)">📅 Analitico Annuale</div>
+  </div>
+
+  <div class="section-panel active" id="sec-membri">
+    <div class="stats-bar" id="statsBar"></div>
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="filter-bar-title">
+        <span>🔍 Filtri</span>
+        <button class="filter-reset" onclick="resetFilters()">✕ Reset filtri</button>
+      </div>
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Gruppo</label>
+          <div class="filter-chips" id="filterGruppo"></div>
+        </div>
+        <div class="filter-group">
+          <label>Ruolo</label>
+          <div class="filter-chips" id="filterRuolo">
+            <div class="fchip rc-PA" data-role="Pioniere Ausiliare" onclick="toggleRoleFilter(this)">Pion. Ausiliare</div>
+            <div class="fchip rc-PR" data-role="Pioniere Regolare" onclick="toggleRoleFilter(this)">Pion. Regolare</div>
+            <div class="fchip rc-PC" data-role="Proclamatore" onclick="toggleRoleFilter(this)">Proclamatore</div>
+            <div class="fchip rc-SF" data-role="SFTS" onclick="toggleRoleFilter(this)">SFTS</div>
+            <div class="fchip rc-IN" data-role="Inattivo" onclick="toggleRoleFilter(this)">Inattivo</div>
+          </div>
+        </div>
+      </div>
+      <div class="filter-count" id="filterCount"></div>
+    </div>
+
+    <div class="add-form" id="addForm">
+      <h4>Nuovo Membro</h4>
+      <div class="form-grid">
+        <div class="fld"><label>Nome</label><input id="nw-nome" placeholder="Cognome Nome"></div>
+        <div class="fld"><label>Ruolo</label>
+          <select id="nw-ruolo">
+            <option>Pioniere Ausiliare</option><option>Pioniere Regolare</option>
+            <option>Proclamatore</option><option>SFTS</option><option>Inattivo</option>
+          </select></div>
+        <div class="fld"><label>Gruppo</label><input id="nw-gruppo" value="1"></div>
+        <div class="fld"><label>Ore / SI</label><input id="nw-ore" placeholder="es. 45 o SI"></div>
+        <div class="fld"><label>S.B.</label><input id="nw-sb" type="number" min="0" value="0"></div>
+        <div class="fld"><label>Note</label><input id="nw-note" placeholder="opzionale"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="addMember()">Aggiungi</button>
+        <button class="btn btn-ghost editor-only" onclick="toggleAddForm()">Annulla</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Nome</th><th>Ruolo</th><th>Gr.</th><th>Ore</th><th>S.B.</th><th>Note</th><th></th></tr></thead>
+        <tbody id="membriBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-panel" id="sec-totali">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Ruolo</th><th>N° Proc.</th><th>Pub.</th><th>Video</th><th>Ore</th><th>V.U.</th><th>S.B.</th></tr></thead>
+        <tbody id="totaliBody"></tbody>
+      </table>
+    </div>
+    <div class="tbl-wrap" style="margin-top:16px">
+      <table><tbody id="totaliSummary"></tbody></table>
+    </div>
+  </div>
+
+  <div class="section-panel" id="sec-presenze">
+    <div class="cards-grid" id="presenzeCards"></div>
+  </div>
+
+  <div class="section-panel" id="sec-annuale">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Mese</th><th>Categoria</th><th>Proc.</th><th>Pub.</th><th>Vid.</th><th>Ore</th><th>V.U.</th><th>S.B.</th></tr></thead>
+        <tbody id="annualBody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- MODALS -->
+<div class="modal-bg" id="modalAddYear">
+  <div class="modal">
+    <h2>➕ Aggiungi Anno</h2>
+    <p>Verrà creato un anno con 12 mesi vuoti (Gennaio–Dicembre), con la stessa lista membri dell'anno corrente.</p>
+    <div class="mfld"><label>Anno (es. 2027)</label><input id="modal-year-input" type="number" min="2000" max="2099" placeholder="2027"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalAddYear')">Annulla</button>
+      <button class="btn btn-primary" onclick="confirmAddYear()">Crea Anno</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalAddMonth">
+  <div class="modal">
+    <h2>➕ Aggiungi Mese</h2>
+    <p>Verrà aggiunto un mese all'anno selezionato, con la stessa lista membri del mese precedente.</p>
+    <div class="mfld"><label>Anno</label><input id="modal-month-year" type="number" readonly></div>
+    <div class="mfld"><label>Mese</label>
+      <select id="modal-month-sel">
+        <option value="01">Gennaio</option><option value="02">Febbraio</option>
+        <option value="03">Marzo</option><option value="04">Aprile</option>
+        <option value="05">Maggio</option><option value="06">Giugno</option>
+        <option value="07">Luglio</option><option value="08">Agosto</option>
+        <option value="09">Settembre</option><option value="10">Ottobre</option>
+        <option value="11">Novembre</option><option value="12">Dicembre</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalAddMonth')">Annulla</button>
+      <button class="btn btn-primary" onclick="confirmAddMonth()">Aggiungi Mese</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,11,16,.87);z-index:2000;align-items:center;justify-content:center;flex-direction:column;gap:16px">
+  <div style="width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite"></div>
+  <div id="loadingMsg" style="color:var(--text);font-size:.9rem;font-weight:600">Caricamento...</div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}
+/* ── AUTH ── */
+.auth-banner{background:var(--surface2);border-bottom:1px solid var(--border);padding:7px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:.78rem}
+.auth-banner .left{display:flex;align-items:center;gap:10px}
+.auth-status{display:flex;align-items:center;gap:6px;font-weight:600}
+.auth-dot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.auth-dot.editor{background:var(--accent3)}
+.lock-btn{padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.lock-btn:hover{border-color:var(--accent);color:var(--accent)}
+.edit-blocked{pointer-events:none;opacity:.45;user-select:none}
+.modal-bg.auth-modal .modal{max-width:340px}
+.pwd-input{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:1rem;padding:10px 14px;border-radius:8px;width:100%;letter-spacing:.1em}
+.pwd-input:focus{outline:none;border-color:var(--accent)}
+.pwd-error{color:var(--accent2);font-size:.78rem;margin-top:6px;display:none}
+</style>
+
+<!-- CONFIG MODAL -->
+<div class="modal-bg" id="modalConfig">
+  <div class="modal">
+    <h2>⚙ Configurazione Google Sheets</h2>
+    <p>Incolla l'URL del tuo Google Apps Script Web App per attivare la sincronizzazione.</p>
+    <div class="mfld">
+      <label>URL Web App (Apps Script)</label>
+      <input id="configScriptUrl" type="text" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:.75rem">
+    </div>
+    <div style="background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:16px;font-size:.75rem;color:var(--muted);line-height:1.6">
+      <strong style="color:var(--text)">Comment obtenir l'URL :</strong><br>
+      Apps Script → Déployer → Gérer les déploiements → copie l'URL Web App
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalConfig')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveConfig()">Salva configurazione</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+const RAW = {"months": {"2026-01": {"mese": "2026-01", "members": [{"id": 1, "nome": "Adjingué Kevin", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "13", "sb": 0, "note": ""}, {"id": 2, "nome": "Adjingué Sara", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "10", "sb": 0, "note": ""}, {"id": 3, "nome": "Alagi Giuliana", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "56", "sb": 0, "note": ""}, {"id": 4, "nome": "Alagi Salvatore", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "52", "sb": 0, "note": ""}, {"id": 5, "nome": "Banambie Michel", "ruolo": "Proclamatore", "gruppo": "1", "ore": "SI", "sb": 0, "note": ""}, {"id": 6, "nome": "Barbàra Giuseppe", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "52", "sb": 0, "note": ""}, {"id": 7, "nome": "Barbàra Lorella", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "50", "sb": 0, "note": ""}, {"id": 8, "nome": "Barbàra Lorenzo", "ruolo": "Proclamatore", "gruppo": "1", "ore": "SI", "sb": 0, "note": ""}, {"id": 9, "nome": "Beugré Benjamin", "ruolo": "Proclamatore", "gruppo": "2", "ore": "SI", "sb": 1, "note": ""}, {"id": 10, "nome": "Beugré Dorothée", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "53", "sb": 1, "note": ""}, {"id": 11, "nome": "Cannolo Giuseppe", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "120", "sb": 2, "note": ""}, {"id": 12, "nome": "Conchebi Elisabetta", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "50", "sb": 1, "note": ""}, {"id": 13, "nome": "Conchebi J.Paul", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "55", "sb": 0, "note": ""}, {"id": 14, "nome": "Conchebi Joel", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "14", "sb": 0, "note": ""}, {"id": 15, "nome": "Cusenza Giampaolo", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "50", "sb": 0, "note": ""}, {"id": 16, "nome": "Cusenza Vanessa", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "50", "sb": 0, "note": ""}, {"id": 17, "nome": "Djuikoua Viviane", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "61", "sb": 1, "note": ""}, {"id": 18, "nome": "Ename Thomas", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "39", "sb": 0, "note": "Riposo necessario dovuto a stanchezza stagionale"}, {"id": 19, "nome": "Epoupa Catherine", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "18", "sb": 1, "note": ""}, {"id": 20, "nome": "Epoupa Guillaume", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "15", "sb": 2, "note": ""}, {"id": 21, "nome": "Epoupa Naomi", "ruolo": "Proclamatore", "gruppo": "1", "ore": "SI", "sb": 0, "note": ""}, {"id": 22, "nome": "Foguem Jael", "ruolo": "Proclamatore", "gruppo": "2", "ore": "SI", "sb": 2, "note": ""}, {"id": 23, "nome": "Foguem Jephte", "ruolo": "Proclamatore", "gruppo": "2", "ore": "SI", "sb": 0, "note": ""}, {"id": 24, "nome": "Foguem Keira", "ruolo": "Proclamatore", "gruppo": "2", "ore": "SI", "sb": 0, "note": ""}, {"id": 25, "nome": "Giovannini Anne", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "20", "sb": 0, "note": ""}, {"id": 26, "nome": "Kia Azzurra", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "90", "sb": 2, "note": ""}, {"id": 27, "nome": "Konan Mickaela Miranda", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "20", "sb": 0, "note": ""}, {"id": 28, "nome": "Konan Nicole", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "69", "sb": 2, "note": ""}, {"id": 29, "nome": "Konan Serge", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "31", "sb": 3, "note": ""}, {"id": 30, "nome": "Maffo Nidel", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "49", "sb": 1, "note": ""}, {"id": 31, "nome": "Mianzanzoma Eddy", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "17", "sb": 0, "note": ""}, {"id": 32, "nome": "Mouanga Reine", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "63", "sb": 0, "note": ""}, {"id": 33, "nome": "Moukette Daniel", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "50", "sb": 2, "note": ""}, {"id": 34, "nome": "Ndjomo Chanceline", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "20", "sb": 0, "note": ""}, {"id": 35, "nome": "Ndjomo Giada Priscilla", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "30", "sb": 0, "note": ""}, {"id": 36, "nome": "Ndjomo Henry", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "57", "sb": 0, "note": ""}, {"id": 37, "nome": "Ngaladzélé Céline", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "18", "sb": 1, "note": ""}, {"id": 38, "nome": "Nkoua Nicole", "ruolo": "Proclamatore", "gruppo": "1", "ore": "SI", "sb": 0, "note": ""}, {"id": 39, "nome": "Nya Gaius", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "51", "sb": 1, "note": ""}, {"id": 40, "nome": "Omba Albert", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "18", "sb": 0, "note": ""}, {"id": 42, "nome": "Pila Onyx", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "47", "sb": 1, "note": "Selon le programme"}, {"id": 43, "nome": "Russotto Paola", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "46", "sb": 1, "note": "MALATTIA"}, {"id": 44, "nome": "Russotto Samuele", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "16", "sb": 1, "note": ""}, {"id": 45, "nome": "Schamba Luzolo Marie", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "52", "sb": 0, "note": ""}, {"id": 46, "nome": "Shungu Louise", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "40", "sb": 1, "note": ""}, {"id": 47, "nome": "Tchedjouo Ashley", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "31", "sb": 2, "note": ""}, {"id": 48, "nome": "Tchedjouo Ingrid", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "17", "sb": 0, "note": ""}, {"id": 49, "nome": "Tchikangwa Darismine", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "30", "sb": 0, "note": ""}, {"id": 50, "nome": "Tchouandep Lina", "ruolo": "Proclamatore", "gruppo": "3", "ore": "SI", "sb": 0, "note": ""}, {"id": 51, "nome": "Telemako Malundu Gauche", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "41", "sb": 0, "note": ""}, {"id": 52, "nome": "Viswani Chujjoo", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "50", "sb": 1, "note": ""}, {"id": 53, "nome": "Wenbo Shako", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "16", "sb": 0, "note": ""}], "totali_categoria": [{"ruolo": "Proclamatori", "n_proc": 9, "pub": 0, "video": 0, "ore": 0, "vu": 0, "sb": 3}, {"ruolo": "Pion. Regolari", "n_proc": 25, "pub": 0, "video": 0, "ore": 1383, "vu": 0, "sb": 19}, {"ruolo": "Pion. Ausiliari", "n_proc": 18, "pub": 0, "video": 0, "ore": 364, "vu": 0, "sb": 8}, {"ruolo": "SFTS", "n_proc": 0, "pub": 0, "video": 0, "ore": 0, "vu": 0, "sb": 0}], "presenze": {"settimane": [{"settimana": "Settimana 1", "infra": 53, "wkd": 59}, {"settimana": "Settimana 2", "infra": 52, "wkd": 59}, {"settimana": "Settimana 3", "infra": 58, "wkd": 54}, {"settimana": "Settimana 4", "infra": 56, "wkd": 64}, {"settimana": "Settimana 5", "infra": 68, "wkd": 83}], "totale_infra": 287, "totale_wkd": 319, "media_infra": 57.4, "media_wkd": 63.8}}, "2026-02": {"mese": "2026-02", "members": [{"id": 1, "nome": "Adjingué Kevin", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "12", "sb": 0, "note": ""}, {"id": 2, "nome": "Adjingué Sara", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "13", "sb": 0, "note": ""}, {"id": 3, "nome": "Alagi Giuliana", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "52", "sb": 0, "note": ""}, {"id": 4, "nome": "Alagi Salvatore", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "54", "sb": 0, "note": ""}, {"id": 5, "nome": "Ambassa Gregoire", "ruolo": "Proclamatore", "gruppo": "2", "ore": "SI", "sb": 0, "note": ""}, {"id": 6, "nome": "Banambie Michel", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 7, "nome": "Barbàra Giuseppe", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "47", "sb": 0, "note": ""}, {"id": 8, "nome": "Barbàra Lorella", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "68", "sb": 0, "note": ""}, {"id": 9, "nome": "Barbàra Lorenzo", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 10, "nome": "Beugré Benjamin", "ruolo": "Proclamatore", "gruppo": "2", "ore": "SI", "sb": 1, "note": ""}, {"id": 11, "nome": "Beugré Dorothée", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "37", "sb": 1, "note": ""}, {"id": 12, "nome": "Cannolo Giuseppe", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "103", "sb": 2, "note": ""}, {"id": 13, "nome": "Conchebi Elisabetta", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "47", "sb": 1, "note": ""}, {"id": 14, "nome": "Conchebi J.Paul", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "47", "sb": 0, "note": ""}, {"id": 15, "nome": "Conchebi Joel", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 16, "nome": "Cusenza Giampaolo", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "40", "sb": 0, "note": ""}, {"id": 17, "nome": "Cusenza Vanessa", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "50", "sb": 0, "note": ""}, {"id": 18, "nome": "Djuikoua Viviane", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "43", "sb": 1, "note": ""}, {"id": 19, "nome": "Ename Thomas", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "36", "sb": 0, "note": "Imprévues"}, {"id": 20, "nome": "Epoupa Catherine", "ruolo": "Proclamatore", "gruppo": "3", "ore": "SI", "sb": 1, "note": ""}, {"id": 21, "nome": "Epoupa Guillaume", "ruolo": "Proclamatore", "gruppo": "3", "ore": "SI", "sb": 2, "note": ""}, {"id": 22, "nome": "Epoupa Naomi", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 23, "nome": "Foguem Jael", "ruolo": "Proclamatore", "gruppo": "2", "ore": "SI", "sb": 2, "note": ""}, {"id": 24, "nome": "Foguem Jephte", "ruolo": "Proclamatore", "gruppo": "2", "ore": "*", "sb": 0, "note": ""}, {"id": 25, "nome": "Foguem Keira", "ruolo": "Proclamatore", "gruppo": "2", "ore": "*", "sb": 0, "note": ""}, {"id": 26, "nome": "Giovannini Anne", "ruolo": "Proclamatore", "gruppo": "2", "ore": "*", "sb": 0, "note": ""}, {"id": 27, "nome": "Kia Azzurra", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "75", "sb": 2, "note": ""}, {"id": 28, "nome": "Konan Mickaela Miranda", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 29, "nome": "Konan Nicole", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "42", "sb": 2, "note": "Selon programme"}, {"id": 30, "nome": "Konan Serge", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "20", "sb": 2, "note": ""}, {"id": 31, "nome": "Maffo Nidel", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "54", "sb": 0, "note": ""}, {"id": 32, "nome": "Mianzanzoma Eddy", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "23", "sb": 0, "note": ""}, {"id": 33, "nome": "Mouanga Reine", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "50", "sb": 0, "note": ""}, {"id": 34, "nome": "Moukette Daniel", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "50", "sb": 1, "note": ""}, {"id": 35, "nome": "Ndjomo Chanceline", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "21", "sb": 0, "note": ""}, {"id": 36, "nome": "Ndjomo Giada Priscilla", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "27", "sb": 0, "note": ""}, {"id": 37, "nome": "Ndjomo Henry", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "57", "sb": 0, "note": ""}, {"id": 38, "nome": "Ngaladzélé Céline", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 1, "note": ""}, {"id": 39, "nome": "Nkoua Nicole", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 40, "nome": "Nya Gaius", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "50", "sb": 0, "note": ""}, {"id": 41, "nome": "Omba Albert", "ruolo": "Proclamatore", "gruppo": "2", "ore": "*", "sb": 0, "note": ""}, {"id": 42, "nome": "Pila Onyx", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "46", "sb": 0, "note": ""}, {"id": 43, "nome": "Russotto Paola", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "75", "sb": 2, "note": ""}, {"id": 44, "nome": "Russotto Samuele", "ruolo": "Proclamatore", "gruppo": "2", "ore": "*", "sb": 0, "note": ""}, {"id": 45, "nome": "Schamba Luzolo Marie", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "41", "sb": 0, "note": "Malade"}, {"id": 46, "nome": "Shungu Louise", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "45", "sb": 1, "note": "Selon programme"}, {"id": 47, "nome": "Tchedjouo Ashley", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "38", "sb": 0, "note": ""}, {"id": 48, "nome": "Tchedjouo Ingrid", "ruolo": "Proclamatore", "gruppo": "3", "ore": "SI", "sb": 0, "note": ""}, {"id": 49, "nome": "Tchikangwa Darismine", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "30", "sb": 0, "note": ""}, {"id": 50, "nome": "Tchouandep Lina", "ruolo": "Proclamatore", "gruppo": "3", "ore": "SI", "sb": 0, "note": ""}, {"id": 51, "nome": "Telemako Malundu Gauche", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "19", "sb": 0, "note": ""}, {"id": 52, "nome": "Viswani Chujjoo", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "43", "sb": 2, "note": ""}, {"id": 53, "nome": "Wenbo Shako", "ruolo": "Proclamatore", "gruppo": "2", "ore": "*", "sb": 0, "note": ""}], "totali_categoria": [{"ruolo": "Proclamatori", "n_proc": 20, "pub": 0, "video": 0, "ore": 0, "vu": 0, "sb": 7}, {"ruolo": "Pion. Regolari", "n_proc": 25, "pub": 0, "video": 0, "ore": 1290, "vu": 0, "sb": 15}, {"ruolo": "Pion. Ausiliari", "n_proc": 8, "pub": 0, "video": 0, "ore": 165, "vu": 0, "sb": 2}, {"ruolo": "SFTS", "n_proc": 0, "pub": 0, "video": 0, "ore": 0, "vu": 0, "sb": 0}], "presenze": {"settimane": [{"settimana": "Settimana 1", "infra": null, "wkd": 63}, {"settimana": "Settimana 2", "infra": 57, "wkd": 59}, {"settimana": "Settimana 3", "infra": 57, "wkd": 64}, {"settimana": "Settimana 4", "infra": 64, "wkd": 57}, {"settimana": "Settimana 5", "infra": 56, "wkd": null}], "totale_infra": 234, "totale_wkd": 243, "media_infra": 58.5, "media_wkd": 60.75}}, "2026-03": {"mese": "2026-03", "members": [{"id": 1, "nome": "Adjingué Kevin", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "12", "sb": 0, "note": ""}, {"id": 2, "nome": "Adjingué Sara", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 3, "nome": "Alagi Giuliana", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "57", "sb": 0, "note": ""}, {"id": 4, "nome": "Alagi Salvatore", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "67", "sb": 0, "note": ""}, {"id": 5, "nome": "Ambassa Gregoire", "ruolo": "Proclamatore", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 6, "nome": "Banambie Michel", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 7, "nome": "Barbàra Giuseppe", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "58", "sb": 0, "note": ""}, {"id": 8, "nome": "Barbàra Lorella", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "75", "sb": 0, "note": ""}, {"id": 9, "nome": "Barbàra Lorenzo", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 10, "nome": "Beugré Benjamin", "ruolo": "Proclamatore", "gruppo": "2", "ore": "*", "sb": 1, "note": ""}, {"id": 11, "nome": "Beugré Dorothée", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "51", "sb": 1, "note": ""}, {"id": 12, "nome": "Cannolo Giuseppe", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "137", "sb": 1, "note": ""}, {"id": 13, "nome": "Conchebi Elisabetta", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "57", "sb": 2, "note": ""}, {"id": 14, "nome": "Conchebi J.Paul", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "50", "sb": 0, "note": ""}, {"id": 15, "nome": "Conchebi Joel", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 16, "nome": "Cusenza Giampaolo", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "50", "sb": 1, "note": ""}, {"id": 17, "nome": "Cusenza Vanessa", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "52", "sb": 1, "note": ""}, {"id": 18, "nome": "Djuikoua Viviane", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "43", "sb": 1, "note": ""}, {"id": 19, "nome": "Ename Thomas", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "50", "sb": 0, "note": ""}, {"id": 20, "nome": "Epoupa Catherine", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "20", "sb": 1, "note": ""}, {"id": 21, "nome": "Epoupa Guillaume", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "15", "sb": 2, "note": ""}, {"id": 22, "nome": "Epoupa Naomi", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 23, "nome": "Foguem Jael", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "15", "sb": 2, "note": ""}, {"id": 24, "nome": "Foguem Jephte", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "15", "sb": 1, "note": ""}, {"id": 25, "nome": "Foguem Keira", "ruolo": "Proclamatore", "gruppo": "2", "ore": "*", "sb": 0, "note": ""}, {"id": 26, "nome": "Giovannini Anne", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "20", "sb": 0, "note": ""}, {"id": 27, "nome": "Kia Azzurra", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "70", "sb": 2, "note": ""}, {"id": 28, "nome": "Konan Mickaela Miranda", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "17", "sb": 0, "note": ""}, {"id": 29, "nome": "Konan Nicole", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "55", "sb": 2, "note": ""}, {"id": 30, "nome": "Konan Serge", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "22", "sb": 2, "note": ""}, {"id": 31, "nome": "Maffo Nidel", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "36", "sb": 1, "note": ""}, {"id": 32, "nome": "Mianzanzoma Eddy", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "32", "sb": 1, "note": ""}, {"id": 33, "nome": "Mouanga Reine", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "55", "sb": 0, "note": ""}, {"id": 34, "nome": "Moukette Daniel", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "55", "sb": 1, "note": ""}, {"id": 35, "nome": "Ndjomo Chanceline", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "25", "sb": 1, "note": ""}, {"id": 36, "nome": "Ndjomo Giada Priscilla", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "27", "sb": 0, "note": ""}, {"id": 37, "nome": "Ndjomo Henry", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "60", "sb": 0, "note": ""}, {"id": 38, "nome": "Ngaladzélé Céline", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "22", "sb": 1, "note": ""}, {"id": 39, "nome": "Nkoua Nicole", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 40, "nome": "Nya Gaius", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "50", "sb": 0, "note": ""}, {"id": 41, "nome": "Omba Albert", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "17", "sb": 0, "note": ""}, {"id": 42, "nome": "Pila Onyx", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "53", "sb": 0, "note": ""}, {"id": 43, "nome": "Russotto Paola", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "72", "sb": 3, "note": ""}, {"id": 44, "nome": "Russotto Samuele", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "25", "sb": 2, "note": ""}, {"id": 45, "nome": "Schamba Luzolo Marie", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "54", "sb": 0, "note": ""}, {"id": 46, "nome": "Shungu Louise", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 1, "note": ""}, {"id": 47, "nome": "Tchedjouo Ashley", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "40", "sb": 1, "note": ""}, {"id": 48, "nome": "Tchedjouo Ingrid", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "15", "sb": 0, "note": ""}, {"id": 49, "nome": "Tchikangwa Darismine", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "30", "sb": 0, "note": ""}, {"id": 50, "nome": "Tchouandep Lina", "ruolo": "Proclamatore", "gruppo": "3", "ore": "SI", "sb": 0, "note": ""}, {"id": 51, "nome": "Telemako Malundu Gauche", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "23", "sb": 0, "note": ""}, {"id": 52, "nome": "Viswani Chujjoo", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "68", "sb": 2, "note": ""}, {"id": 53, "nome": "Wenbo Shako", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "15", "sb": 0, "note": ""}], "totali_categoria": [{"ruolo": "Proclamatori", "n_proc": 11, "pub": 0, "video": 0, "ore": 0, "vu": 0, "sb": 2}, {"ruolo": "Pion. Regolari", "n_proc": 24, "pub": 0, "video": 0, "ore": 1415, "vu": 0, "sb": 19}, {"ruolo": "Pion. Ausiliari", "n_proc": 18, "pub": 0, "video": 0, "ore": 367, "vu": 0, "sb": 13}, {"ruolo": "SFTS", "n_proc": 0, "pub": 0, "video": 0, "ore": 0, "vu": 0, "sb": 0}], "presenze": {"settimane": [{"settimana": "Settimana 1", "infra": null, "wkd": 64}, {"settimana": "Settimana 2", "infra": 58, "wkd": 67}, {"settimana": "Settimana 3", "infra": 85, "wkd": 59}, {"settimana": "Settimana 4", "infra": 62, "wkd": 69}, {"settimana": "Settimana 5", "infra": 62, "wkd": 84}], "totale_infra": 267, "totale_wkd": 343, "media_infra": 66.75, "media_wkd": 68.6}}, "2026-04": {"mese": "2026-04", "members": [{"id": 1, "nome": "Adjingué Kevin", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 2, "nome": "Adjingué Sara", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 3, "nome": "Alagi Giuliana", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "57", "sb": 1, "note": ""}, {"id": 4, "nome": "Alagi Salvatore", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "53", "sb": 0, "note": ""}, {"id": 5, "nome": "Ambassa Gregoire", "ruolo": "Proclamatore", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 6, "nome": "Banambie Michel", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 7, "nome": "Barbàra Giuseppe", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "41", "sb": 1, "note": "LAVORI BETEL 5H (MALADIE)"}, {"id": 8, "nome": "Barbàra Lorella", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "62", "sb": 1, "note": ""}, {"id": 9, "nome": "Barbàra Lorenzo", "ruolo": "Proclamatore", "gruppo": "3", "ore": "SI", "sb": 0, "note": ""}, {"id": 10, "nome": "Beugré Benjamin", "ruolo": "Proclamatore", "gruppo": "3", "ore": "SI", "sb": 1, "note": ""}, {"id": 11, "nome": "Beugré Dorothée", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "50", "sb": 1, "note": ""}, {"id": 12, "nome": "Cannolo Giuseppe", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "125", "sb": 1, "note": ""}, {"id": 13, "nome": "Conchebi Elisabetta", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "57", "sb": 2, "note": ""}, {"id": 14, "nome": "Conchebi J.Paul", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "46", "sb": 0, "note": ""}, {"id": 15, "nome": "Conchebi Joel", "ruolo": "Proclamatore", "gruppo": "1", "ore": "14", "sb": 0, "note": ""}, {"id": 16, "nome": "Cusenza Giampaolo", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "45", "sb": 1, "note": ""}, {"id": 17, "nome": "Cusenza Vanessa", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "50", "sb": 1, "note": ""}, {"id": 18, "nome": "Djuikoua Viviane", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "50", "sb": 0, "note": ""}, {"id": 19, "nome": "Ename Thomas", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "38", "sb": 0, "note": "Selon mon programme"}, {"id": 20, "nome": "Epoupa Catherine", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "SI", "sb": 1, "note": ""}, {"id": 21, "nome": "Epoupa Guillaume", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "15", "sb": 2, "note": ""}, {"id": 22, "nome": "Epoupa Naomi", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 23, "nome": "Foguem Jael", "ruolo": "Proclamatore", "gruppo": "2", "ore": "*", "sb": 2, "note": ""}, {"id": 24, "nome": "Foguem Jephte", "ruolo": "Proclamatore", "gruppo": "2", "ore": "*", "sb": 0, "note": ""}, {"id": 25, "nome": "Foguem Keira", "ruolo": "Proclamatore", "gruppo": "2", "ore": "*", "sb": 0, "note": ""}, {"id": 26, "nome": "Giovannini Anne", "ruolo": "Proclamatore", "gruppo": "2", "ore": "*", "sb": 0, "note": ""}, {"id": 27, "nome": "Kia Azzurra", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "75", "sb": 2, "note": ""}, {"id": 28, "nome": "Konan Mickaela Miranda", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "17", "sb": 0, "note": ""}, {"id": 29, "nome": "Konan Nicole", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "40", "sb": 3, "note": ""}, {"id": 30, "nome": "Konan Serge", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "26", "sb": 2, "note": ""}, {"id": 31, "nome": "Maffo Nidel", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "43", "sb": 0, "note": ""}, {"id": 32, "nome": "Mianzanzoma Eddy", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "31", "sb": 0, "note": ""}, {"id": 33, "nome": "Mouanga Reine", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "35", "sb": 0, "note": "MALADIE"}, {"id": 34, "nome": "Moukette Daniel", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "55", "sb": 1, "note": ""}, {"id": 35, "nome": "Ndjomo Chanceline", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "16", "sb": 1, "note": ""}, {"id": 36, "nome": "Ndjomo Giada Priscilla", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "20", "sb": 0, "note": ""}, {"id": 37, "nome": "Ndjomo Henry", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "60", "sb": 0, "note": ""}, {"id": 38, "nome": "Ngaladzélé Céline", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "Participato", "sb": 1, "note": ""}, {"id": 39, "nome": "Nkoua Nicole", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 0, "note": ""}, {"id": 40, "nome": "Nya Gaius", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "20", "sb": 0, "note": "voyages, vacances , familles"}, {"id": 41, "nome": "Omba Albert", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "19", "sb": 0, "note": ""}, {"id": 42, "nome": "Pila Onyx", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "48", "sb": 0, "note": "Selon mon programme"}, {"id": 43, "nome": "Russotto Paola", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "45", "sb": 1, "note": ""}, {"id": 44, "nome": "Russotto Samuele", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "19", "sb": 2, "note": ""}, {"id": 45, "nome": "Schamba Luzolo Marie", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "54", "sb": 0, "note": ""}, {"id": 46, "nome": "Shungu Louise", "ruolo": "Proclamatore", "gruppo": "1", "ore": "Participato", "sb": 1, "note": ""}, {"id": 47, "nome": "Tchedjouo Ashley", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "38", "sb": 0, "note": ""}, {"id": 48, "nome": "Tchedjouo Ingrid", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "SI", "sb": 0, "note": ""}, {"id": 49, "nome": "Tchikangwa Darismine", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "SI", "sb": 0, "note": ""}, {"id": 50, "nome": "Tchouandep Lina", "ruolo": "Proclamatore", "gruppo": "3", "ore": "Si", "sb": 0, "note": ""}, {"id": 51, "nome": "Telemako Malundu Gauche", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "14", "sb": 0, "note": ""}, {"id": 52, "nome": "Viswani Chujjoo", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "57", "sb": 2, "note": ""}, {"id": 53, "nome": "Wenbo Shako", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "15", "sb": 0, "note": ""}], "totali_categoria": [{"ruolo": "Proclamatori", "n_proc": 14, "pub": 0, "video": 0, "ore": 14, "vu": 0, "sb": 4}, {"ruolo": "Pion. Regolari", "n_proc": 24, "pub": 0, "video": 0, "ore": 1244, "vu": 0, "sb": 18}, {"ruolo": "Pion. Ausiliari", "n_proc": 15, "pub": 0, "video": 0, "ore": 192, "vu": 0, "sb": 9}, {"ruolo": "SFTS", "n_proc": 0, "pub": 0, "video": 0, "ore": 0, "vu": 0, "sb": 0}], "presenze": {"settimane": [{"settimana": "Settimana 1", "infra": 94, "wkd": 64}, {"settimana": "Settimana 2", "infra": 53, "wkd": 59}, {"settimana": "Settimana 3", "infra": null, "wkd": 69}, {"settimana": "Settimana 4", "infra": 58, "wkd": null}, {"settimana": "Settimana 5", "infra": 63, "wkd": null}], "totale_infra": 268, "totale_wkd": 192, "media_infra": 67.0, "media_wkd": 64.0}}, "2026-05": {"mese": "2026-05", "members": [{"id": 1, "nome": "Adjingué Kevin", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 2, "nome": "Adjingué Sara", "ruolo": "Proclamatore", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 3, "nome": "Alagi Giuliana", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 4, "nome": "Alagi Salvatore", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 5, "nome": "Ambassa Gregoire", "ruolo": "Proclamatore", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 6, "nome": "Banambie Michel", "ruolo": "Proclamatore", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 7, "nome": "Barbàra Giuseppe", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 8, "nome": "Barbàra Lorella", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 9, "nome": "Barbàra Lorenzo", "ruolo": "Proclamatore", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 10, "nome": "Beugré Benjamin", "ruolo": "Proclamatore", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 11, "nome": "Beugré Dorothée", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 12, "nome": "Cannolo Giuseppe", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 13, "nome": "Conchebi Elisabetta", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 14, "nome": "Conchebi J.Paul", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 15, "nome": "Conchebi Joel", "ruolo": "Proclamatore", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 16, "nome": "Cusenza Giampaolo", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 17, "nome": "Cusenza Vanessa", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 18, "nome": "Djuikoua Viviane", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 19, "nome": "Ename Thomas", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 20, "nome": "Epoupa Catherine", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 21, "nome": "Epoupa Guillaume", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 22, "nome": "Epoupa Naomi", "ruolo": "Proclamatore", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 23, "nome": "Foguem Jael", "ruolo": "Proclamatore", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 24, "nome": "Foguem Jephte", "ruolo": "Proclamatore", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 25, "nome": "Foguem Keira", "ruolo": "Proclamatore", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 26, "nome": "Giovannini Anne", "ruolo": "Proclamatore", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 27, "nome": "Kia Azzurra", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 28, "nome": "Konan Mickaela Miranda", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 29, "nome": "Konan Nicole", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 30, "nome": "Konan Serge", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 31, "nome": "Maffo Nidel", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 32, "nome": "Mianzanzoma Eddy", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 33, "nome": "Mouanga Reine", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 34, "nome": "Moukette Daniel", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 35, "nome": "Ndjomo Chanceline", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 36, "nome": "Ndjomo Giada Priscilla", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 37, "nome": "Ndjomo Henry", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 38, "nome": "Ngaladzélé Céline", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 39, "nome": "Nkoua Nicole", "ruolo": "Proclamatore", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 40, "nome": "Nya Gaius", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 41, "nome": "Omba Albert", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 42, "nome": "Pila Onyx", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 43, "nome": "Russotto Paola", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 44, "nome": "Russotto Samuele", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 45, "nome": "Schamba Luzolo Marie", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 46, "nome": "Shungu Louise", "ruolo": "Proclamatore", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 47, "nome": "Tchedjouo Ashley", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 48, "nome": "Tchedjouo Ingrid", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 49, "nome": "Tchikangwa Darismine", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 50, "nome": "Tchouandep Lina", "ruolo": "Proclamatore", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 51, "nome": "Telemako Malundu Gauche", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 52, "nome": "Viswani Chujjoo", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 53, "nome": "Wenbo Shako", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}], "totali_categoria": [{"ruolo": "Proclamatori", "n_proc": 14, "pub": 0, "video": 0, "ore": 0, "vu": 0, "sb": 0}, {"ruolo": "Pion. Regolari", "n_proc": 24, "pub": 0, "video": 0, "ore": 0, "vu": 0, "sb": 0}, {"ruolo": "Pion. Ausiliari", "n_proc": 15, "pub": 0, "video": 0, "ore": 0, "vu": 0, "sb": 0}, {"ruolo": "SFTS", "n_proc": 0, "pub": 0, "video": 0, "ore": 0, "vu": 0, "sb": 0}], "presenze": {"settimane": [{"settimana": "Settimana 1", "infra": 94, "wkd": 64}, {"settimana": "Settimana 2", "infra": 53, "wkd": 59}, {"settimana": "Settimana 3", "infra": null, "wkd": 69}, {"settimana": "Settimana 4", "infra": 58, "wkd": null}, {"settimana": "Settimana 5", "infra": 63, "wkd": null}], "totale_infra": 268, "totale_wkd": 192, "media_infra": 67.0, "media_wkd": 64.0}}, "2026-06": {"mese": "2026-06", "members": [{"id": 1, "nome": "Adjingué Kevin", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 2, "nome": "Adjingué Sara", "ruolo": "Proclamatore", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 3, "nome": "Alagi Giuliana", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 4, "nome": "Alagi Salvatore", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 5, "nome": "Ambassa Gregoire", "ruolo": "Proclamatore", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 6, "nome": "Banambie Michel", "ruolo": "Proclamatore", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 7, "nome": "Barbàra Giuseppe", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 8, "nome": "Barbàra Lorella", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 9, "nome": "Barbàra Lorenzo", "ruolo": "Proclamatore", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 10, "nome": "Beugré Benjamin", "ruolo": "Proclamatore", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 11, "nome": "Beugré Dorothée", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 12, "nome": "Cannolo Giuseppe", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 13, "nome": "Conchebi Elisabetta", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 14, "nome": "Conchebi J.Paul", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 15, "nome": "Conchebi Joel", "ruolo": "Proclamatore", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 16, "nome": "Cusenza Giampaolo", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 17, "nome": "Cusenza Vanessa", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 18, "nome": "Djuikoua Viviane", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 19, "nome": "Ename Thomas", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 20, "nome": "Epoupa Catherine", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 21, "nome": "Epoupa Guillaume", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 22, "nome": "Epoupa Naomi", "ruolo": "Proclamatore", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 23, "nome": "Foguem Jael", "ruolo": "Proclamatore", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 24, "nome": "Foguem Jephte", "ruolo": "Proclamatore", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 25, "nome": "Foguem Keira", "ruolo": "Proclamatore", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 26, "nome": "Giovannini Anne", "ruolo": "Proclamatore", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 27, "nome": "Kia Azzurra", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 28, "nome": "Konan Mickaela Miranda", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 29, "nome": "Konan Nicole", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 30, "nome": "Konan Serge", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 31, "nome": "Maffo Nidel", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 32, "nome": "Mianzanzoma Eddy", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 33, "nome": "Mouanga Reine", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 34, "nome": "Moukette Daniel", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 35, "nome": "Ndjomo Chanceline", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 36, "nome": "Ndjomo Giada Priscilla", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 37, "nome": "Ndjomo Henry", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 38, "nome": "Ngaladzélé Céline", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 39, "nome": "Nkoua Nicole", "ruolo": "Proclamatore", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 40, "nome": "Nya Gaius", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 41, "nome": "Omba Albert", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 42, "nome": "Pila Onyx", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 43, "nome": "Russotto Paola", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 44, "nome": "Russotto Samuele", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 45, "nome": "Schamba Luzolo Marie", "ruolo": "Pioniere Regolare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 46, "nome": "Shungu Louise", "ruolo": "Proclamatore", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 47, "nome": "Tchedjouo Ashley", "ruolo": "Pioniere Regolare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 48, "nome": "Tchedjouo Ingrid", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 49, "nome": "Tchikangwa Darismine", "ruolo": "Pioniere Ausiliare", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 50, "nome": "Tchouandep Lina", "ruolo": "Proclamatore", "gruppo": "3", "ore": "", "sb": 0, "note": ""}, {"id": 51, "nome": "Telemako Malundu Gauche", "ruolo": "Pioniere Ausiliare", "gruppo": "1", "ore": "", "sb": 0, "note": ""}, {"id": 52, "nome": "Viswani Chujjoo", "ruolo": "Pioniere Regolare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}, {"id": 53, "nome": "Wenbo Shako", "ruolo": "Pioniere Ausiliare", "gruppo": "2", "ore": "", "sb": 0, "note": ""}], "totali_categoria": [{"ruolo": "Proclamatori", "n_proc": 14, "pub": 0, "video": 0, "ore": 0, "vu": 0, "sb": 0}, {"ruolo": "Pion. Regolari", "n_proc": 24, "pub": 0, "video": 0, "ore": 0, "vu": 0, "sb": 0}, {"ruolo": "Pion. Ausiliari", "n_proc": 15, "pub": 0, "video": 0, "ore": 0, "vu": 0, "sb": 0}, {"ruolo": "SFTS", "n_proc": 0, "pub": 0, "video": 0, "ore": 0, "vu": 0, "sb": 0}], "presenze": {"settimane": [{"settimana": "Settimana 1", "infra": 94, "wkd": 64}, {"settimana": "Settimana 2", "infra": 53, "wkd": 59}, {"settimana": "Settimana 3", "infra": null, "wkd": 69}, {"settimana": "Settimana 4", "infra": 58, "wkd": null}, {"settimana": "Settimana 5", "infra": 63, "wkd": null}], "totale_infra": 268, "totale_wkd": 192, "media_infra": 67.0, "media_wkd": 64.0}}}, "annual": [{"mese": "2021-09", "categoria": "Pionieri Ausiliari", "proc": 6, "pub": 8, "vid": 17, "ore": 158, "vu": 92, "sb": 1}, {"mese": "2021-09", "categoria": "Pionieri Regolari", "proc": 25, "pub": 185, "vid": 199, "ore": 978, "vu": 601, "sb": 31}, {"mese": "2021-09", "categoria": "Proclamatori", "proc": 28, "pub": 37, "vid": 71, "ore": 401, "vu": 274, "sb": 16}, {"mese": "2021-09", "categoria": "SFTS", "proc": 2, "pub": 65, "vid": 35, "ore": 145, "vu": 162, "sb": 11}, {"mese": "2021-10", "categoria": "Pionieri Ausiliari", "proc": 6, "pub": 27, "vid": 24, "ore": 180, "vu": 71, "sb": 3}, {"mese": "2021-10", "categoria": "Pionieri Regolari", "proc": 27, "pub": 188, "vid": 210, "ore": 1144, "vu": 760, "sb": 34}, {"mese": "2021-10", "categoria": "Proclamatori", "proc": 24, "pub": 40, "vid": 53, "ore": 332, "vu": 187, "sb": 17}, {"mese": "2021-10", "categoria": "SFTS", "proc": 2, "pub": 104, "vid": 60, "ore": 198, "vu": 215, "sb": 11}, {"mese": "2021-10", "categoria": "Inattivo", "proc": 1, "pub": 0, "vid": 0, "ore": 0, "vu": 0, "sb": 0}, {"mese": "2021-11", "categoria": "Pionieri Ausiliari", "proc": 13, "pub": 95, "vid": 48, "ore": 408, "vu": 212, "sb": 12}, {"mese": "2021-11", "categoria": "Pionieri Regolari", "proc": 28, "pub": 417, "vid": 237, "ore": 1236, "vu": 798, "sb": 35}, {"mese": "2021-11", "categoria": "Proclamatori", "proc": 15, "pub": 76, "vid": 18, "ore": 246, "vu": 142, "sb": 9}, {"mese": "2021-11", "categoria": "SFTS", "proc": 2, "pub": 103, "vid": 32, "ore": 164, "vu": 173, "sb": 12}, {"mese": "2021-11", "categoria": "Inattivo", "proc": 1, "pub": 0, "vid": 0, "ore": 0, "vu": 0, "sb": 0}, {"mese": "2021-12", "categoria": "Pionieri Ausiliari", "proc": 4, "pub": 10, "vid": 9, "ore": 129, "vu": 93, "sb": 3}, {"mese": "2021-12", "categoria": "Pionieri Regolari", "proc": 28, "pub": 191, "vid": 178, "ore": 1132, "vu": 698, "sb": 29}, {"mese": "2021-12", "categoria": "Proclamatori", "proc": 25, "pub": 84, "vid": 63, "ore": 443, "vu": 263, "sb": 19}, {"mese": "2021-12", "categoria": "SFTS", "proc": 2, "pub": 54, "vid": 37, "ore": 185, "vu": 183, "sb": 11}, {"mese": "2022-01", "categoria": "Pionieri Ausiliari", "proc": 14, "pub": 32, "vid": 65, "ore": 481, "vu": 249, "sb": 16}, {"mese": "2022-01", "categoria": "Pionieri Regolari", "proc": 28, "pub": 196, "vid": 185, "ore": 1207, "vu": 763, "sb": 30}, {"mese": "2022-01", "categoria": "Proclamatori", "proc": 15, "pub": 31, "vid": 28, "ore": 247, "vu": 160, "sb": 10}, {"mese": "2022-01", "categoria": "SFTS", "proc": 2, "pub": 66, "vid": 39, "ore": 173, "vu": 182, "sb": 12}, {"mese": "2022-02", "categoria": "Pionieri Ausiliari", "proc": 5, "pub": 26, "vid": 23, "ore": 152, "vu": 127, "sb": 6}, {"mese": "2022-02", "categoria": "Pionieri Regolari", "proc": 25, "pub": 112, "vid": 144, "ore": 883, "vu": 556, "sb": 26}, {"mese": "2022-02", "categoria": "Proclamatori", "proc": 26, "pub": 52, "vid": 91, "ore": 442, "vu": 273, "sb": 13}, {"mese": "2022-02", "categoria": "SFTS", "proc": 2, "pub": 47, "vid": 45, "ore": 174, "vu": 168, "sb": 14}, {"mese": "2122-03", "categoria": "Pionieri Ausiliari", "proc": 12, "pub": 88, "vid": 62, "ore": 436, "vu": 209, "sb": 15}, {"mese": "2122-03", "categoria": "Pionieri Regolari", "proc": 25, "pub": 304, "vid": 227, "ore": 1081, "vu": 714, "sb": 27}, {"mese": "2122-03", "categoria": "Proclamatori", "proc": 19, "pub": 68, "vid": 35, "ore": 311, "vu": 246, "sb": 9}, {"mese": "2122-03", "categoria": "SFTS", "proc": 2, "pub": 84, "vid": 54, "ore": 175, "vu": 195, "sb": 16}, {"mese": "2122-04", "categoria": "Pionieri Ausiliari", "proc": 14, "pub": 115, "vid": 57, "ore": 407, "vu": 251, "sb": 14}, {"mese": "2122-04", "categoria": "Pionieri Regolari", "proc": 25, "pub": 389, "vid": 304, "ore": 1000, "vu": 806, "sb": 26}, {"mese": "2122-04", "categoria": "Proclamatori", "proc": 17, "pub": 73, "vid": 46, "ore": 249, "vu": 220, "sb": 10}, {"mese": "2122-04", "categoria": "SFTS", "proc": 2, "pub": 95, "vid": 48, "ore": 164, "vu": 263, "sb": 16}, {"mese": "2122-05", "categoria": "Pionieri Ausiliari", "proc": 5, "pub": 17, "vid": 10, "ore": 152, "vu": 89, "sb": 7}, {"mese": "2122-05", "categoria": "Pionieri Regolari", "proc": 25, "pub": 140, "vid": 142, "ore": 914, "vu": 555, "sb": 25}, {"mese": "2122-05", "categoria": "Proclamatori", "proc": 26, "pub": 60, "vid": 68, "ore": 404, "vu": 246, "sb": 21}, {"mese": "2122-05", "categoria": "SFTS", "proc": 2, "pub": 61, "vid": 43, "ore": 181, "vu": 190, "sb": 13}, {"mese": "2022-06", "categoria": "Pionieri Ausiliari", "proc": 5, "pub": 75, "vid": 35, "ore": 195, "vu": 109, "sb": 5}, {"mese": "2022-06", "categoria": "Pionieri Regolari", "proc": 25, "pub": 237, "vid": 193, "ore": 896, "vu": 453, "sb": 25}, {"mese": "2022-06", "categoria": "Proclamatori", "proc": 25, "pub": 239, "vid": 69, "ore": 396, "vu": 271, "sb": 19}, {"mese": "2022-06", "categoria": "SFTS", "proc": 2, "pub": 81, "vid": 51, "ore": 228, "vu": 169, "sb": 10}]};
+
+const ROLES = ['Pioniere Ausiliare','Pioniere Regolare','Proclamatore','SFTS','Inattivo'];
+const MONTH_NAMES_IT = ['','Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+  'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+
+let currentMonth = '2026-01';
+let currentYear  = '2026';
+let currentSec   = 'membri';
+let nextId       = 100;
+
+const data = JSON.parse(JSON.stringify(RAW));
+
+// ── HELPERS ──────────────────────────────────────────────────────────────
+function esc(v){ return (v??'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') }
+function monthLabel(ms){
+  const [y,m]=ms.split('-');
+  return MONTH_NAMES_IT[+m]+' '+y;
+}
+function toast(msg='Salvato',col='var(--accent3)',tc='#022c22'){
+  const el=document.getElementById('toast');
+  el.textContent='✓ '+msg; el.style.background=col; el.style.color=tc;
+  el.classList.add('show');
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2400);
+}
+function roleBadge(r){
+  const m={'Pioniere Regolare':'PR','Pioniere Ausiliare':'PA','Proclamatore':'PC','SFTS':'SF','Inattivo':'IN'};
+  return `<span class="badge badge-${m[r]||'PC'}">${r}</span>`;
+}
+function getMD(){ return data.months[currentMonth]; }
+function getYears(){
+  const ySet=new Set(Object.keys(data.months).map(k=>k.split('-')[0]));
+  return [...ySet].sort();
+}
+function getMonthsForYear(y){
+  return Object.keys(data.months).filter(k=>k.startsWith(y+'-')).sort();
+}
+function emptyMonth(ms, membersToCopy){
+  return {
+    mese: ms,
+    members: membersToCopy.map(m=>({...m, ore:'', sb:0, note:''})),
+    totali_categoria: [
+      {ruolo:'Proclamatori',n_proc:0,pub:0,video:0,ore:0,vu:0,sb:0},
+      {ruolo:'Pion. Regolari',n_proc:0,pub:0,video:0,ore:0,vu:0,sb:0},
+      {ruolo:'Pion. Ausiliari',n_proc:0,pub:0,video:0,ore:0,vu:0,sb:0},
+      {ruolo:'SFTS',n_proc:0,pub:0,video:0,ore:0,vu:0,sb:0},
+    ],
+    presenze:{
+      settimane:[
+        {settimana:'Settimana 1',infra:null,wkd:null},
+        {settimana:'Settimana 2',infra:null,wkd:null},
+        {settimana:'Settimana 3',infra:null,wkd:null},
+        {settimana:'Settimana 4',infra:null,wkd:null},
+        {settimana:'Settimana 5',infra:null,wkd:null},
+      ],
+      totale_infra:0,totale_wkd:0,media_infra:0,media_wkd:0
+    }
+  };
+}
+
+// ── YEAR BAR ─────────────────────────────────────────────────────────────
+function buildYearBar(){
+  const years = getYears();
+  const div = document.getElementById('yearChips');
+  div.innerHTML='';
+  years.forEach(y=>{
+    const chip=document.createElement('div');
+    chip.className='year-chip'+(y===currentYear?' active':'');
+    chip.innerHTML=`${y}<span class="del-year" onclick="event.stopPropagation();deleteYear('${y}')" title="Elimina anno ${y}">✕</span>`;
+    chip.onclick=()=>{ currentYear=y; switchToFirstMonthOfYear(y); };
+    div.appendChild(chip);
+  });
+}
+
+function switchToFirstMonthOfYear(y){
+  const months=getMonthsForYear(y);
+  if(months.length){
+    currentMonth=months[0];
+    buildYearBar();
+    buildMonthNav();
+    renderAll();
+  }
+}
+
+// ── ADD / DELETE YEAR ─────────────────────────────────────────────────────
+function openAddYear(){
+  const years=getYears();
+  const suggest=years.length ? String(+years[years.length-1]+1) : '2027';
+  document.getElementById('modal-year-input').value=suggest;
+  openModal('modalAddYear');
+}
+
+function confirmAddYear(){
+  const y=String(document.getElementById('modal-year-input').value).trim();
+  if(!/^\d{4}$/.test(y)){ alert('Anno non valido'); return; }
+  if(getYears().includes(y)){ alert(`L'anno ${y} esiste già`); return; }
+  // Get latest members to copy
+  const allKeys=Object.keys(data.months).sort();
+  const lastKey=allKeys[allKeys.length-1];
+  const refMembers=lastKey ? data.months[lastKey].members : [];
+  // Create all 12 months
+  for(let m=1;m<=12;m++){
+    const ms=`${y}-${String(m).padStart(2,'0')}`;
+    data.months[ms]=emptyMonth(ms, refMembers);
+  }
+  closeModal('modalAddYear');
+  currentYear=y;
+  switchToFirstMonthOfYear(y);
+  toast(`Anno ${y} creato (12 mesi)`);
+}
+
+function deleteYear(y){
+  const months=getMonthsForYear(y);
+  if(!confirm(`Eliminare l'anno ${y} e tutti i suoi ${months.length} mesi? Quest'azione è irreversibile.`)) return;
+  months.forEach(ms=>delete data.months[ms]);
+  const years=getYears();
+  currentYear=years.length ? years[years.length-1] : '';
+  if(currentYear) switchToFirstMonthOfYear(currentYear);
+  else { buildYearBar(); buildMonthNav(); }
+  toast(`Anno ${y} eliminato`,'var(--accent2)','#fff');
+}
+
+// ── MONTH NAV ─────────────────────────────────────────────────────────────
+function buildMonthNav(){
+  const nav=document.getElementById('monthNav');
+  nav.innerHTML='';
+  const months=getMonthsForYear(currentYear);
+  months.forEach(ms=>{
+    const div=document.createElement('div');
+    div.className='month-tab'+(ms===currentMonth?' active':'');
+    div.innerHTML=`${MONTH_NAMES_IT[+ms.split('-')[1]]}
+      <span class="del-month" onclick="event.stopPropagation();deleteMonth('${ms}')" title="Elimina mese">✕</span>`;
+    div.onclick=()=>{ currentMonth=ms; buildMonthNav(); renderAll(); };
+    nav.appendChild(div);
+  });
+  // Add month button
+  const addBtn=document.createElement('button');
+  addBtn.className='month-add-btn';
+  addBtn.innerHTML='＋ Mese';
+  addBtn.onclick=openAddMonth;
+  nav.appendChild(addBtn);
+}
+
+function openAddMonth(){
+  document.getElementById('modal-month-year').value=currentYear;
+  // Pre-select next available month
+  const existing=getMonthsForYear(currentYear).map(k=>k.split('-')[1]);
+  const all=['01','02','03','04','05','06','07','08','09','10','11','12'];
+  const next=all.find(m=>!existing.includes(m))||'01';
+  document.getElementById('modal-month-sel').value=next;
+  openModal('modalAddMonth');
+}
+
+function confirmAddMonth(){
+  const y=document.getElementById('modal-month-year').value;
+  const m=document.getElementById('modal-month-sel').value;
+  const ms=`${y}-${m}`;
+  if(data.months[ms]){ alert(`Il mese ${monthLabel(ms)} esiste già`); return; }
+  // Copy members from most recent existing month of this year
+  const existing=getMonthsForYear(y).sort();
+  const refKey=existing.length ? existing[existing.length-1] : null;
+  const refMembers=refKey ? data.months[refKey].members : [];
+  data.months[ms]=emptyMonth(ms, refMembers);
+  closeModal('modalAddMonth');
+  currentMonth=ms;
+  buildMonthNav();
+  renderAll();
+  toast(`${monthLabel(ms)} aggiunto`);
+}
+
+function deleteMonth(ms){
+  const months=getMonthsForYear(currentYear);
+  if(months.length<=1){ alert('Non puoi eliminare l\'unico mese di un anno. Elimina l\'anno invece.'); return; }
+  if(!confirm(`Eliminare ${monthLabel(ms)}? Quest'azione è irreversibile.`)) return;
+  delete data.months[ms];
+  const remaining=getMonthsForYear(currentYear).sort();
+  currentMonth=remaining[remaining.length-1];
+  buildMonthNav(); renderAll();
+  toast(`${monthLabel(ms)} eliminato`,'var(--accent2)','#fff');
+}
+
+// ── MODAL HELPERS ─────────────────────────────────────────────────────────
+function openModal(id){ document.getElementById(id).classList.add('open') }
+function closeModal(id){ document.getElementById(id).classList.remove('open') }
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('modal-bg')) e.target.classList.remove('open');
+});
+
+// ── STATS BAR ─────────────────────────────────────────────────────────────
+function renderStats(){
+  const md=getMD();
+  const src = (activeGroups.size>0||activeRoles.size>0) ? getFilteredMembers() : md.members;
+  const totalOre=src.reduce((s,m)=>s+(isNaN(+m.ore)?0:+m.ore),0);
+  const totalSB=src.reduce((s,m)=>s+(m.sb||0),0);
+  const nbSI=src.filter(m=>String(m.ore).toUpperCase().includes('SI')||String(m.ore).includes('Parti')).length;
+  const isFiltered = activeGroups.size>0||activeRoles.size>0;
+  document.getElementById('statsBar').innerHTML=`
+    <div class="stat"><div class="lbl">Membri${isFiltered?' (filtrati)':''}</div><div class="val">${src.length}${isFiltered?`<span style="font-size:.8rem;color:var(--muted)"> / ${md.members.length}</span>`:''}</div></div>
+    <div class="stat"><div class="lbl">Totale Ore</div><div class="val">${totalOre}</div></div>
+    <div class="stat"><div class="lbl">Dichiar. SI</div><div class="val">${nbSI}</div></div>
+    <div class="stat"><div class="lbl">Totale S.B.</div><div class="val">${totalSB}</div></div>
+  `;
+}
+
+// ── FILTER STATE ──────────────────────────────────────────────────────────
+let activeGroups = new Set();  // empty = all
+let activeRoles  = new Set();  // empty = all
+
+function buildGroupChips(){
+  const md = getMD();
+  const groups = [...new Set(md.members.map(m=>String(m.gruppo||'').trim()).filter(Boolean))].sort((a,b)=>+a-+b||a.localeCompare(b));
+  const container = document.getElementById('filterGruppo');
+  container.innerHTML='';
+  groups.forEach(g=>{
+    const cls = ['gc1','gc2','gc3','gc4','gc5'][+g-1]||'gc-other';
+    const chip = document.createElement('div');
+    chip.className = `fchip ${cls}${activeGroups.has(g)?' active':''}`;
+    chip.dataset.gruppo = g;
+    chip.textContent = `Gruppo ${g}`;
+    chip.onclick = () => toggleGroupFilter(chip);
+    container.appendChild(chip);
+  });
+  // sync role chips active state
+  document.querySelectorAll('#filterRuolo .fchip').forEach(c=>{
+    c.classList.toggle('active', activeRoles.has(c.dataset.role));
+  });
+  updateFilterCount();
+}
+
+function toggleGroupFilter(chip){
+  const g = chip.dataset.gruppo;
+  if(activeGroups.has(g)){ activeGroups.delete(g); chip.classList.remove('active'); }
+  else { activeGroups.add(g); chip.classList.add('active'); }
+  updateFilterCount();
+  renderMembri();
+}
+
+function toggleRoleFilter(chip){
+  const r = chip.dataset.role;
+  if(activeRoles.has(r)){ activeRoles.delete(r); chip.classList.remove('active'); }
+  else { activeRoles.add(r); chip.classList.add('active'); }
+  updateFilterCount();
+  renderMembri();
+}
+
+function resetFilters(){
+  activeGroups.clear(); activeRoles.clear();
+  buildGroupChips();
+  renderMembri();
+}
+
+function getFilteredMembers(){
+  const md = getMD();
+  return md.members.filter(m=>{
+    const gOk = activeGroups.size===0 || activeGroups.has(String(m.gruppo||'').trim());
+    const rOk = activeRoles.size===0  || activeRoles.has(m.ruolo);
+    return gOk && rOk;
+  });
+}
+
+function updateFilterCount(){
+  const total = getMD().members.length;
+  const filtered = getFilteredMembers().length;
+  const el = document.getElementById('filterCount');
+  if(activeGroups.size===0 && activeRoles.size===0){
+    el.textContent='';
+  } else {
+    const parts=[];
+    if(activeGroups.size>0) parts.push([...activeGroups].map(g=>`Gruppo ${g}`).join(', '));
+    if(activeRoles.size>0)  parts.push([...activeRoles].join(', '));
+    el.textContent=`Filtro attivo: ${parts.join(' · ')} — ${filtered} di ${total} membri`;
+  }
+}
+
+// ── MEMBRI ─────────────────────────────────────────────────────────────────
+function renderMembri(){
+  const visible = getFilteredMembers();
+  const tbody=document.getElementById('membriBody');
+  tbody.innerHTML='';
+  visible.forEach((m,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="num">${String(i+1).padStart(2,'0')}</td>
+      <td><input class="ci" value="${esc(m.nome)}" onchange="upd('${currentMonth}',${m.id},'nome',this.value)" style="min-width:150px"></td>
+      <td><select class="ci" onchange="upd('${currentMonth}',${m.id},'ruolo',this.value)">
+        ${ROLES.map(r=>`<option${r===m.ruolo?' selected':''}>${r}</option>`).join('')}
+      </select></td>
+      <td><input class="ci ci-mono" value="${esc(m.gruppo)}" onchange="upd('${currentMonth}',${m.id},'gruppo',this.value)" style="width:44px"></td>
+      <td><input class="ci ci-mono" value="${esc(m.ore)}" onchange="upd('${currentMonth}',${m.id},'ore',this.value)" style="width:68px"></td>
+      <td><input class="ci ci-mono" type="number" min="0" value="${m.sb}" onchange="upd('${currentMonth}',${m.id},'sb',+this.value)" style="width:54px"></td>
+      <td><input class="ci" value="${esc(m.note)}" onchange="upd('${currentMonth}',${m.id},'note',this.value)" style="min-width:120px;color:var(--muted)"></td>
+      <td><button class="icon-btn" onclick="delMember('${currentMonth}',${m.id})">🗑</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function upd(ms,id,key,val){
+  if(!IS_EDITOR){ toast("🔐 Accedi come editor per modificare","var(--accent4)","#1a0a00"); applyAuthState(); return; }
+  const m=data.months[ms].members.find(x=>x.id===id);
+  if(m){ m[key]=val; renderStats(); renderTotali(); toast(); }
+}
+function delMember(ms,id){
+  if(!IS_EDITOR){ toast('🔐 Accedi come editor per modificare','var(--accent4)','#1a0a00'); return; }
+  if(!confirm('Eliminare questo membro?')) return;
+  data.months[ms].members=data.months[ms].members.filter(x=>x.id!==id);
+  renderAll(); toast('Eliminato','var(--accent2)','#fff');
+}
+function toggleAddForm(){ document.getElementById('addForm').classList.toggle('open') }
+function addMember(){
+  if(!IS_EDITOR){ toast('🔐 Accedi come editor per modificare','var(--accent4)','#1a0a00'); return; }
+  const nome=document.getElementById('nw-nome').value.trim();
+  if(!nome){ alert('Il nome è obbligatorio'); return; }
+  data.months[currentMonth].members.push({
+    id:nextId++, nome,
+    ruolo:document.getElementById('nw-ruolo').value,
+    gruppo:document.getElementById('nw-gruppo').value.trim(),
+    ore:document.getElementById('nw-ore').value.trim(),
+    sb:+document.getElementById('nw-sb').value||0,
+    note:document.getElementById('nw-note').value.trim()
+  });
+  ['nw-nome','nw-ore','nw-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('nw-sb').value='0';
+  document.getElementById('addForm').classList.remove('open');
+  renderAll(); toast('Membro aggiunto');
+}
+
+const ROLE_TO_CATEGORIA = {
+  'Proclamatore': 'Proclamatori',
+  'Pioniere Regolare': 'Pion. Regolari',
+  'Pioniere Ausiliare': 'Pion. Ausiliari',
+  'SFTS': 'SFTS'
+  // 'Inattivo' n'est pas compté dans Totali Categoria
+};
+
+function computeAutoTotals(members){
+  const result = {};
+  ['Proclamatori','Pion. Regolari','Pion. Ausiliari','SFTS'].forEach(cat=>{
+    result[cat] = {n_proc:0, ore:0, sb:0};
+  });
+  members.forEach(m=>{
+    const cat = ROLE_TO_CATEGORIA[m.ruolo];
+    if(!cat) return;
+    result[cat].n_proc++;
+    const oreNum = parseFloat(m.ore);
+    if(!isNaN(oreNum)) result[cat].ore += oreNum;
+    result[cat].sb += (+m.sb || 0);
+  });
+  return result;
+}
+
+// ── TOTALI ─────────────────────────────────────────────────────────────────
+function renderTotali(){
+  const md=getMD();
+  const auto=computeAutoTotals(md.members);
+  const tbody=document.getElementById('totaliBody'); tbody.innerHTML='';
+  md.totali_categoria.forEach((t,i)=>{
+    const a=auto[t.ruolo]||{n_proc:0,ore:0,sb:0};
+    // synchronise les valeurs stockées (pour export CSV/PDF)
+    t.n_proc=a.n_proc; t.ore=a.ore; t.sb=a.sb;
+
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${roleBadge(t.ruolo.replace('Pion.','Pioniere').replace('Ausiliari','Ausiliare').replace('Regolari','Regolare'))}</td>
+      <td class="num" style="font-family:'DM Mono',monospace;font-size:.85rem;color:var(--accent3)" title="Calcolato automaticamente">${a.n_proc}</td>
+      <td><input class="ci ci-mono" type="number" min="0" value="${t.pub}" onchange="updTot('${currentMonth}',${i},'pub',+this.value)" style="width:65px"></td>
+      <td><input class="ci ci-mono" type="number" min="0" value="${t.video}" onchange="updTot('${currentMonth}',${i},'video',+this.value)" style="width:65px"></td>
+      <td class="num" style="font-family:'DM Mono',monospace;font-size:.85rem;color:var(--accent3)" title="Calcolato automaticamente">${a.ore}</td>
+      <td><input class="ci ci-mono" type="number" min="0" value="${t.vu}" onchange="updTot('${currentMonth}',${i},'vu',+this.value)" style="width:65px"></td>
+      <td class="num" style="font-family:'DM Mono',monospace;font-size:.85rem;color:var(--accent3)" title="Calcolato automaticamente">${a.sb}</td>`;
+    tbody.appendChild(tr);
+  });
+  const tp=md.totali_categoria.reduce((s,t)=>s+t.n_proc,0);
+  const to=md.totali_categoria.reduce((s,t)=>s+t.ore,0);
+  const ts=md.totali_categoria.reduce((s,t)=>s+t.sb,0);
+  document.getElementById('totaliSummary').innerHTML=`
+    <tr style="background:var(--surface2)">
+      <td style="font-weight:700;color:var(--accent);padding:10px 12px">Totale Congregazione</td>
+      <td style="font-family:'DM Mono',monospace;padding:10px 12px;color:var(--accent)">${tp}</td>
+      <td colspan="2" style="padding:10px 12px;color:var(--muted)">—</td>
+      <td style="font-family:'DM Mono',monospace;padding:10px 12px;color:var(--accent)">${to}</td>
+      <td style="padding:10px 12px;color:var(--muted)">—</td>
+      <td style="font-family:'DM Mono',monospace;padding:10px 12px;color:var(--accent)">${ts}</td>
+    </tr>`;
+}
+function updTot(ms,idx,key,val){ if(!IS_EDITOR){ toast("🔐 Accedi come editor","var(--accent4)","#1a0a00"); return; } data.months[ms].totali_categoria[idx][key]=val; renderTotali(); toast(); }
+
+// ── PRESENZE ──────────────────────────────────────────────────────────────
+function renderPresenze(){
+  const p=getMD().presenze;
+  const grid=document.getElementById('presenzeCards'); grid.innerHTML='';
+  p.settimane.forEach((s,i)=>{
+    const card=document.createElement('div'); card.className='card';
+    card.innerHTML=`<h3>${s.settimana}</h3>
+      <div class="field"><label>Infrasettimanale</label>
+        <input type="number" value="${s.infra??''}" onchange="updPres('${currentMonth}',${i},'infra',+this.value)"></div>
+      <div class="field"><label>Weekend</label>
+        <input type="number" value="${s.wkd??''}" onchange="updPres('${currentMonth}',${i},'wkd',+this.value)"></div>`;
+    grid.appendChild(card);
+  });
+  const sum=document.createElement('div'); sum.className='card'; sum.style.borderColor='var(--accent)';
+  sum.innerHTML=`<h3 style="color:var(--text)">Riepilogo</h3>
+    <div class="field"><label>Totale Infra</label><input type="number" value="${p.totale_infra}" readonly></div>
+    <div class="field"><label>Totale Weekend</label><input type="number" value="${p.totale_wkd}" readonly></div>
+    <div class="field"><label>Media Infra</label><input type="number" step="0.1" value="${p.media_infra}" onchange="updPresSummary('${currentMonth}','media_infra',+this.value)"></div>
+    <div class="field"><label>Media Weekend</label><input type="number" step="0.1" value="${p.media_wkd}" onchange="updPresSummary('${currentMonth}','media_wkd',+this.value)"></div>`;
+  grid.appendChild(sum);
+}
+function updPres(ms,idx,key,val){ if(!IS_EDITOR){ toast("🔐 Accedi come editor","var(--accent4)","#1a0a00"); return; }
+  data.months[ms].presenze.settimane[idx][key]=val;
+  const p=data.months[ms].presenze;
+  p.totale_infra=p.settimane.reduce((s,x)=>s+(x.infra||0),0);
+  p.totale_wkd=p.settimane.reduce((s,x)=>s+(x.wkd||0),0);
+  const nI=p.settimane.filter(x=>x.infra).length||1;
+  const nW=p.settimane.filter(x=>x.wkd).length||1;
+  p.media_infra=Math.round(p.totale_infra/nI*10)/10;
+  p.media_wkd=Math.round(p.totale_wkd/nW*10)/10;
+  renderPresenze(); toast();
+}
+function updPresSummary(ms,key,val){ data.months[ms].presenze[key]=val; toast(); }
+
+// ── ANNUAL ────────────────────────────────────────────────────────────────
+function renderAnnual(){
+  const tbody=document.getElementById('annualBody'); tbody.innerHTML='';
+  let lastMonth='';
+  data.annual.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    if(r.mese!==lastMonth){ tr.style.borderTop='2px solid var(--border)'; lastMonth=r.mese; }
+    tr.innerHTML=`
+      <td style="color:var(--accent);font-size:.75rem;font-family:'DM Mono',monospace">${r.mese!==data.annual[i-1]?.mese?r.mese:''}</td>
+      <td>${roleBadge(r.categoria)}</td>
+      ${['proc','pub','vid','ore','vu','sb'].map(k=>`<td><input class="ci ci-mono" type="number" min="0" value="${r[k]}" onchange="updAnnual(${i},'${k}',+this.value)" style="width:58px"></td>`).join('')}
+    `;
+    tbody.appendChild(tr);
+  });
+}
+function updAnnual(i,key,val){ if(!IS_EDITOR){ toast("🔐 Accedi come editor","var(--accent4)","#1a0a00"); return; } data.annual[i][key]=val; toast(); }
+
+// ── SECTION SWITCH ────────────────────────────────────────────────────────
+function switchSec(sec,el){
+  currentSec=sec;
+  document.querySelectorAll('.section-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sec-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('sec-'+sec).classList.add('active');
+  el.classList.add('active');
+  if(sec==='annuale') renderAnnual();
+}
+
+// ── EXPORT CSV ────────────────────────────────────────────────────────────
+function exportCSV(){
+  const ms=currentMonth; const md=data.months[ms];
+  let csv=`RAPPORTO MENSILE,${monthLabel(ms)}\n\n`;
+  csv+='#,Nome,Ruolo,Gruppo,Ore,S.B.,Note\n';
+  md.members.forEach((m,i)=>{ csv+=`${i+1},"${m.nome}","${m.ruolo}","${m.gruppo}","${m.ore}","${m.sb}","${m.note}"\n`; });
+  csv+=`\nTotali per categoria\nRuolo,N° Proc.,Pub.,Video,Ore,V.U.,S.B.\n`;
+  md.totali_categoria.forEach(t=>{ csv+=`"${t.ruolo}",${t.n_proc},${t.pub},${t.video},${t.ore},${t.vu},${t.sb}\n`; });
+  csv+=`\nPresenze Adunanze\nSettimana,Infrasettimanale,Weekend\n`;
+  md.presenze.settimane.forEach(s=>{ csv+=`"${s.settimana}",${s.infra??''},${s.wkd??''}\n`; });
+  csv+=`Totale,${md.presenze.totale_infra},${md.presenze.totale_wkd}\nMedia,${md.presenze.media_infra},${md.presenze.media_wkd}\n`;
+  dl(`rapporto_${ms}.csv`,csv,'text/csv');
+  toast('CSV scaricato');
+}
+
+// ── EXPORT PDF ────────────────────────────────────────────────────────────
+function exportPDF(){
+  const { jsPDF }=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const ms=currentMonth; const md=data.months[ms];
+  const mName=monthLabel(ms);
+  const W=210, mar=14;
+  doc.setFillColor(18,20,28); doc.rect(0,0,W,28,'F');
+  doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.setTextColor(129,140,248); doc.text('Rapporto Congregazione Bologna FR',mar,11);
+  doc.setFontSize(10); doc.setFont('helvetica','normal');
+  doc.setTextColor(180,182,200); doc.text(mName,mar,19);
+  doc.setFontSize(8); doc.setTextColor(100,105,130);
+  doc.text(`Generato il ${new Date().toLocaleDateString('it-IT')}`,W-mar,19,{align:'right'});
+  let y=34;
+  const secTitle=title=>{
+    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(129,140,248);
+    doc.text(title.toUpperCase(),mar,y);
+    doc.setDrawColor(45,49,72); doc.line(mar,y+1,W-mar,y+1); y+=7;
+  };
+  secTitle('Lista Membri');
+  doc.autoTable({
+    startY:y, margin:{left:mar,right:mar},
+    head:[['#','Nome','Ruolo','Gr.','Ore','S.B.','Note']],
+    body:md.members.map((m,i)=>[i+1,m.nome,m.ruolo,m.gruppo,m.ore||'-',m.sb,m.note||'-']),
+    styles:{fontSize:7.5,cellPadding:2,lineColor:[45,49,72],lineWidth:0.1},
+    headStyles:{fillColor:[26,29,42],textColor:[107,112,153],fontStyle:'bold',fontSize:7},
+    alternateRowStyles:{fillColor:[18,20,28]},
+    bodyStyles:{fillColor:[22,24,32],textColor:[210,212,230]},
+    columnStyles:{0:{cellWidth:8,halign:'center'},2:{cellWidth:32},3:{cellWidth:9,halign:'center'},4:{cellWidth:13,halign:'center'},5:{cellWidth:10,halign:'center'}},
+  });
+  y=doc.lastAutoTable.finalY+10;
+  if(y>230){ doc.addPage(); y=20; }
+  secTitle('Totali Attività per Categoria');
+  doc.autoTable({
+    startY:y, margin:{left:mar,right:mar},
+    head:[['Ruolo','N° Proc.','Pub.','Video','Ore','V.U.','S.B.']],
+    body:md.totali_categoria.map(t=>[t.ruolo,t.n_proc,t.pub,t.video,t.ore,t.vu,t.sb]),
+    styles:{fontSize:8,cellPadding:2.5,lineColor:[45,49,72],lineWidth:0.1},
+    headStyles:{fillColor:[26,29,42],textColor:[107,112,153],fontStyle:'bold',fontSize:7.5},
+    alternateRowStyles:{fillColor:[18,20,28]},bodyStyles:{fillColor:[22,24,32],textColor:[210,212,230]},
+  });
+  const tp=md.totali_categoria.reduce((s,t)=>s+t.n_proc,0);
+  const to=md.totali_categoria.reduce((s,t)=>s+t.ore,0);
+  const ts=md.totali_categoria.reduce((s,t)=>s+t.sb,0);
+  doc.autoTable({
+    startY:doc.lastAutoTable.finalY, margin:{left:mar,right:mar},
+    body:[['TOTALE CONGREGAZIONE',tp,'-','-',to,'-',ts]],
+    styles:{fontSize:8,cellPadding:2.5,lineColor:[45,49,72],lineWidth:0.1},
+    bodyStyles:{fillColor:[30,35,60],textColor:[129,140,248],fontStyle:'bold'},
+  });
+  y=doc.lastAutoTable.finalY+10;
+  if(y>230){ doc.addPage(); y=20; }
+  secTitle('Presenze alle Adunanze');
+  const presRows=md.presenze.settimane.map(s=>[s.settimana,s.infra??'-',s.wkd??'-']);
+  presRows.push(['Totale',md.presenze.totale_infra,md.presenze.totale_wkd]);
+  presRows.push(['Media',md.presenze.media_infra,md.presenze.media_wkd]);
+  doc.autoTable({
+    startY:y, margin:{left:mar,right:mar},
+    head:[['Settimana','Infrasettimanale (presenti)','Weekend (presenti)']],
+    body:presRows,
+    styles:{fontSize:8,cellPadding:2.5,lineColor:[45,49,72],lineWidth:0.1},
+    headStyles:{fillColor:[26,29,42],textColor:[107,112,153],fontStyle:'bold',fontSize:7.5},
+    alternateRowStyles:{fillColor:[18,20,28]},bodyStyles:{fillColor:[22,24,32],textColor:[210,212,230]},
+    didParseCell(d){ if(d.row.index>=md.presenze.settimane.length){ d.cell.styles.fillColor=[30,35,60]; d.cell.styles.textColor=[129,140,248]; d.cell.styles.fontStyle='bold'; } }
+  });
+  const pc=doc.getNumberOfPages();
+  for(let p=1;p<=pc;p++){
+    doc.setPage(p); doc.setFontSize(7); doc.setTextColor(80,85,110);
+    doc.text(`Pagina ${p} di ${pc}`,W/2,292,{align:'center'});
+    doc.text('Rapporto Congregazione Bologna FR – Uso interno',mar,292);
+  }
+  doc.save(`rapporto_congregazione_${ms}.pdf`);
+  toast('PDF scaricato');
+}
+
+function dl(name,content,mime){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:mime}));
+  a.download=name; a.click();
+}
+
+
+
+// ── AUTH SYSTEM ───────────────────────────────────────────────────────────
+// Password is verified server-side in Apps Script — never stored in HTML
+let IS_EDITOR = false;
+let _authSessionKey = 'editor_session';
+
+function isEditorSession(){
+  // Session persists for 8 hours in localStorage
+  const stored = localStorage.getItem(_authSessionKey);
+  if(!stored) return false;
+  try {
+    const {expires} = JSON.parse(stored);
+    if(Date.now() < expires){ return true; }
+    localStorage.removeItem(_authSessionKey);
+  } catch(e){}
+  return false;
+}
+
+function setEditorSession(pwd){
+  const expires = Date.now() + 8 * 60 * 60 * 1000; // 8h
+  localStorage.setItem(_authSessionKey, JSON.stringify({expires}));
+  localStorage.setItem('editor_pwd', pwd);
+}
+
+function clearEditorSession(){
+  localStorage.removeItem(_authSessionKey);
+  localStorage.removeItem('editor_pwd');
+}
+
+function applyAuthState(){
+  const dot    = document.getElementById('authDot');
+  const label  = document.getElementById('authLabel');
+  const hint   = document.getElementById('authHint');
+  const btn    = document.getElementById('authBtn');
+
+  if(IS_EDITOR){
+    dot.classList.add('editor');
+    label.textContent = '✏️ Modalità Editor';
+    label.style.color = 'var(--accent3)';
+    hint.textContent  = 'Puoi modificare e salvare i dati';
+    btn.textContent   = '🔓 Esci Editor';
+    btn.onclick       = logoutEditor;
+    // Enable all edit controls
+    document.querySelectorAll('.editor-only').forEach(el => el.classList.remove('edit-blocked'));
+    document.querySelectorAll('.ci, .icon-btn').forEach(el => el.classList.remove('edit-blocked'));
+  } else {
+    dot.classList.remove('editor');
+    label.textContent = '👁 Modalità lettura';
+    label.style.color = '';
+    hint.textContent  = 'Accedi come editore per modificare i dati';
+    btn.textContent   = '🔐 Accesso Editor';
+    btn.onclick       = openAuthModal;
+    // Disable edit controls
+    document.querySelectorAll('.editor-only').forEach(el => el.classList.add('edit-blocked'));
+    document.querySelectorAll('.ci, .icon-btn').forEach(el => el.classList.add('edit-blocked'));
+  }
+}
+
+function openAuthModal(){
+  document.getElementById('pwdInput').value = '';
+  document.getElementById('pwdError').style.display = 'none';
+  document.getElementById('authModalTitle').textContent = '🔐 Accesso Editor';
+  document.getElementById('authModalDesc').textContent = 'Inserisci la password per modificare e salvare i dati.';
+  openModal('modalAuth');
+  setTimeout(()=>document.getElementById('pwdInput').focus(), 100);
+}
+
+async function confirmAuth(){
+  if(!SCRIPT_URL){ alert('Configura prima l\'URL Google Sheets (⚙)'); closeModal('modalAuth'); openConfig(); return; }
+  const pwd = document.getElementById('pwdInput').value;
+  if(!pwd){ document.getElementById('pwdError').style.display='block'; document.getElementById('pwdError').textContent='❌ Inserisci la password'; return; }
+
+  // Verify password server-side
+  showLoading('Verifica password...');
+  try {
+    // Use GET for verifyPassword to avoid CORS preflight issues
+    const res = await fetch(SCRIPT_URL + '?action=verifyPassword&pwd=' + encodeURIComponent(pwd), {
+      method: 'GET',
+      redirect: 'follow'
+    });
+    const json = await res.json();
+    hideLoading();
+    if(json.ok && json.authorized){
+      IS_EDITOR = true;
+      setEditorSession(pwd);
+      closeModal('modalAuth');
+      applyAuthState();
+      toast('Accesso editor attivato ✓','var(--accent3)','#022c22');
+    } else {
+      document.getElementById('pwdError').style.display='block';
+      document.getElementById('pwdError').textContent='❌ Password errata — riprova';
+      document.getElementById('pwdInput').value='';
+      document.getElementById('pwdInput').focus();
+    }
+  } catch(err){
+    hideLoading();
+    document.getElementById('pwdError').style.display='block';
+    document.getElementById('pwdError').textContent='❌ Errore connessione: ' + err.message;
+  }
+}
+
+function logoutEditor(){
+  IS_EDITOR = false;
+  clearEditorSession();
+  applyAuthState();
+  toast('Uscito dalla modalità editor','var(--accent4)','#1a0a00');
+}
+
+// ── GOOGLE SHEETS PERSISTENCE ────────────────────────────────────────────
+let SCRIPT_URL = localStorage.getItem('gs_script_url') || '';
+
+function setSyncStatus(msg, col='var(--accent3)'){
+  const el=document.getElementById('syncStatus');
+  if(el){ el.textContent=msg; el.style.color=col; }
+}
+function showLoading(msg='Caricamento...'){
+  document.getElementById('loadingMsg').textContent=msg;
+  document.getElementById('loadingOverlay').style.display='flex';
+}
+function hideLoading(){ document.getElementById('loadingOverlay').style.display='none'; }
+
+// ── CONFIG ────────────────────────────────────────────────────────────────
+function saveConfig(){
+  const url = document.getElementById('configScriptUrl').value.trim();
+  if(!url.startsWith('https://script.google.com')){
+    alert('URL non valide — doit commencer par https://script.google.com');
+    return;
+  }
+  SCRIPT_URL = url;
+  localStorage.setItem('gs_script_url', url);
+  closeModal('modalConfig');
+  toast('URL configurata ✓');
+  setSyncStatus('⬤ configurato','var(--accent3)');
+  loadAll();
+}
+
+function openConfig(){
+  document.getElementById('configScriptUrl').value = SCRIPT_URL;
+  openModal('modalConfig');
+}
+
+// ── LOAD ALL FROM GOOGLE SHEETS ───────────────────────────────────────────
+async function loadAll(){
+  if(!SCRIPT_URL){ openConfig(); return; }
+  showLoading('Caricamento da Google Sheets...');
+  setSyncStatus('⟳ sync...','var(--accent4)');
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=loadAll', { redirect:'follow' });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if(!json.ok) throw new Error(json.error || 'Erreur inconnue');
+
+    // Only replace if we got actual data
+    if(json.months && Object.keys(json.months).length > 0){
+      Object.keys(data.months).forEach(k => delete data.months[k]);
+      Object.assign(data.months, json.months);
+    }
+    if(json.annual && json.annual.length > 0){
+      data.annual = json.annual;
+    }
+
+    // Refresh UI
+    const years=getYears();
+    if(years.length){
+      currentYear=years[years.length-1];
+      const months=getMonthsForYear(currentYear);
+      if(months.length) currentMonth=months[0];
+    }
+    buildYearBar(); buildMonthNav(); renderAll();
+    setSyncStatus('⬤ Google Sheets','var(--accent3)');
+    toast('Dati caricati ✓');
+  } catch(err){
+    setSyncStatus('⚠ errore','var(--accent2)');
+    toast('Errore caricamento: '+err.message,'var(--accent2)','#fff');
+    console.error(err);
+  }
+  hideLoading();
+}
+
+
+// ── SAVE VIA FORM (bypasses CORS for POST from local files) ──────────────
+async function saveViaForm(pwd) {
+  return new Promise((resolve, reject) => {
+    // Create hidden iframe to receive response
+    const iframe = document.createElement('iframe');
+    iframe.name = '_save_frame_' + Date.now();
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    // Create form
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = SCRIPT_URL + '?action=saveAll';
+    form.target = iframe.name;
+    form.style.display = 'none';
+
+    // Add data field
+    const dataField = document.createElement('input');
+    dataField.type = 'hidden';
+    dataField.name = 'data';
+    dataField.value = JSON.stringify({ months: data.months, annual: data.annual, password: pwd });
+    form.appendChild(dataField);
+
+    document.body.appendChild(form);
+
+    // Listen for response
+    const timeout = setTimeout(() => {
+      cleanup();
+      // If we get here, assume success (form POST to GAS often doesn't return readable response)
+      resolve({ ok: true, saved: 'salvato (modalità form)' });
+    }, 5000);
+
+    iframe.onload = () => {
+      clearTimeout(timeout);
+      cleanup();
+      resolve({ ok: true, saved: 'salvato' });
+    };
+
+    function cleanup() {
+      document.body.removeChild(form);
+      document.body.removeChild(iframe);
+    }
+
+    form.submit();
+  });
+}
+
+// ── SAVE ALL TO GOOGLE SHEETS ─────────────────────────────────────────────
+async function saveAll(){
+  if(!SCRIPT_URL){ openConfig(); return; }
+  const btn=document.getElementById('saveBtn');
+  btn.textContent='☁ Salvataggio...'; btn.disabled=true;
+  setSyncStatus('⟳ salvataggio...','var(--accent4)');
+  showLoading('Salvataggio su Google Sheets...');
+  try {
+    const pwd = localStorage.getItem('editor_pwd') || '';
+    // Use fetch with text/plain content-type to avoid CORS preflight
+    const res = await fetch(SCRIPT_URL + '?action=saveAll&pwd=' + encodeURIComponent(pwd), {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({ months: data.months, annual: data.annual }),
+      redirect: 'follow'
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if(!json.ok) throw new Error(json.error || 'Errore sconosciuto');
+    setSyncStatus('⬤ Google Sheets','var(--accent3)');
+    toast('Salvato su Google Sheets ✓ ('+json.saved+')');
+  } catch(err){
+    setSyncStatus('⚠ errore','var(--accent2)');
+    toast('Errore salvataggio: '+err.message,'var(--accent2)','#fff');
+    console.error(err);
+  }
+  btn.textContent='☁ Salva'; btn.disabled=false;
+  hideLoading();
+}
+
+// ── AUTO-DETECT CONFIG ────────────────────────────────────────────────────
+function checkConfig(){
+  if(SCRIPT_URL){
+    setSyncStatus('⬤ configurato','var(--muted)');
+  } else {
+    setSyncStatus('⚙ configura URL','var(--accent4)');
+    // Show subtle hint in header
+    setTimeout(()=>{
+      const el=document.getElementById('syncStatus');
+      if(el) el.style.cursor='pointer', el.onclick=openConfig;
+      if(el) el.title='Clicca per configurare Google Sheets';
+    }, 500);
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────
+function renderAll(){ buildGroupChips(); renderStats(); renderMembri(); renderTotali(); renderPresenze(); }
+
+(async function init(){
+  buildYearBar(); buildMonthNav(); renderAll(); // données embarquées immédiatement
+  checkConfig();
+  // Restore editor session if still valid
+  if(isEditorSession()){ IS_EDITOR = true; }
+  applyAuthState();
+  if(SCRIPT_URL){
+    try {
+      await loadAll();
+    } catch(e){
+      setSyncStatus('⬤ locale (errore sync)','var(--muted)');
+    }
+  }
+})();
+</script>
+</body>
+</html>
