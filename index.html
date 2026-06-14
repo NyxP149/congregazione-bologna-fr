@@ -1028,7 +1028,7 @@ function logoutEditor(){
 }
 
 // ── GOOGLE SHEETS PERSISTENCE ────────────────────────────────────────────
-let SCRIPT_URL = localStorage.getItem('gs_script_url') || '';
+let SCRIPT_URL = localStorage.getItem('gs_script_url') || 'https://script.google.com/macros/s/AKfycbxXuH21y0ny-hLxoccv7FD-zF3EtaYoKdIYCdxTmnAYP-S_UEERGkF9mNr4jQwV80Ma_g/exec';
 
 function setSyncStatus(msg, col='var(--accent3)'){
   const el=document.getElementById('syncStatus');
