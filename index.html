@@ -16,7 +16,48 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;font-size:14px}
-.app{display:grid;grid-template-rows:auto auto auto 1fr;min-height:100vh}
+
+/* ── LOGIN SCREEN ── */
+#loginScreen{
+  position:fixed;inset:0;background:var(--bg);z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+}
+.login-box{
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:48px 40px;width:380px;max-width:92vw;text-align:center;
+}
+.login-logo{font-size:2.2rem;margin-bottom:8px}
+.login-title{font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:4px}
+.login-sub{font-size:.8rem;color:var(--muted);margin-bottom:32px}
+.login-input{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);font-family:'DM Mono',monospace;font-size:1rem;
+  padding:12px 16px;border-radius:10px;letter-spacing:.12em;margin-bottom:12px;
+  transition:border-color .15s;
+}
+.login-input:focus{outline:none;border-color:var(--accent)}
+.login-btn{
+  width:100%;background:var(--accent);color:#fff;border:none;
+  border-radius:10px;padding:13px;font-family:'Inter',sans-serif;
+  font-weight:700;font-size:.95rem;cursor:pointer;transition:all .15s;
+}
+.login-btn:hover{background:#a5b4fc;transform:translateY(-1px)}
+.login-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.login-error{color:var(--accent2);font-size:.8rem;margin-top:10px;display:none;font-weight:600}
+.login-spinner{display:none;margin-top:16px;color:var(--muted);font-size:.8rem}
+
+/* ── MIGRATE BANNER ── */
+#migrateBanner{
+  background:linear-gradient(135deg,#1a1230,#1e1a2e);
+  border-bottom:2px solid var(--accent4);
+  padding:10px 24px;display:none;
+  align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+}
+.migrate-text{font-size:.8rem;color:var(--accent4);font-weight:600}
+.migrate-text span{color:var(--muted);font-weight:400;margin-left:6px;font-size:.75rem}
+
+/* ── APP ── */
+.app{display:grid;grid-template-rows:auto auto 1fr;min-height:100vh}
 header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
 .header-brand h1{font-size:1.1rem;font-weight:700;letter-spacing:-.02em}
 .header-brand h1 span{color:var(--accent)}
@@ -120,17 +161,6 @@ select.ci option{background:var(--surface2)}
 .modal .mfld input,.modal .mfld select{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:.9rem;padding:8px 12px;border-radius:8px;width:100%}
 .modal .mfld input:focus{outline:none;border-color:var(--accent)}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
-.auth-banner{background:var(--surface2);border-bottom:1px solid var(--border);padding:7px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:.78rem}
-.auth-banner .left{display:flex;align-items:center;gap:10px}
-.auth-status{display:flex;align-items:center;gap:6px;font-weight:600}
-.auth-dot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
-.auth-dot.editor{background:var(--accent3)}
-.lock-btn{padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
-.lock-btn:hover{border-color:var(--accent);color:var(--accent)}
-.edit-blocked{pointer-events:none;opacity:.45;user-select:none}
-.pwd-input{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:1rem;padding:10px 14px;border-radius:8px;width:100%;letter-spacing:.1em}
-.pwd-input:focus{outline:none;border-color:var(--accent)}
-.pwd-error{color:var(--accent2);font-size:.78rem;margin-top:6px;display:none}
 .key-warning{background:#2a1a1a;border:1px solid var(--accent2);border-radius:8px;padding:10px 14px;font-size:.78rem;color:var(--accent2);margin-bottom:16px;line-height:1.5}
 .info-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:.78rem;color:var(--muted);margin-bottom:14px;line-height:1.6}
 .auto-val{font-family:'DM Mono',monospace;font-size:.88rem;color:var(--accent3);font-weight:600;padding:8px 12px}
@@ -139,82 +169,66 @@ select.ci option{background:var(--surface2)}
 .cumul-toolbar select,.cumul-toolbar input[type=text]{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:.85rem;padding:6px 10px;border-radius:6px}
 .cumul-toolbar select:focus,.cumul-toolbar input:focus{outline:none;border-color:var(--accent)}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.login-box{animation:fadeIn .4s ease}
 </style>
 </head>
 <body>
-<div class="app">
 
+<!-- ══════════════════════════════════════════════════════
+     LOGIN SCREEN — visible tant que non authentifié
+     ══════════════════════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🏛️</div>
+    <div class="login-title">Congregazione Bologna FR</div>
+    <div class="login-sub">Inserisci la password per accedere</div>
+    <input class="login-input" id="loginPwd" type="password" placeholder="••••••••"
+      onkeydown="if(event.key==='Enter') doLogin()">
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Accedi</button>
+    <div class="login-error" id="loginError">❌ Password errata — riprova</div>
+    <div class="login-spinner" id="loginSpinner">⏳ Verifica in corso...</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     APP — masquée jusqu'au login
+     ══════════════════════════════════════════════════════ -->
+<div id="appContent" style="display:none">
+
+<!-- MIGRATE BANNER -->
+<div id="migrateBanner" style="display:none;background:linear-gradient(135deg,#1a1230,#1e1a2e);border-bottom:2px solid var(--accent4);padding:10px 24px;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+  <div style="font-size:.8rem;color:var(--accent4);font-weight:600">
+    🔐 I nomi sono ancora in chiaro nel database
+    <span style="color:var(--muted);font-weight:400;margin-left:6px;font-size:.75rem">Cifra i nomi per proteggerli da accessi non autorizzati al foglio Google Sheets</span>
+  </div>
+  <button class="btn btn-warning" style="font-size:.75rem" onclick="openMigrateModal()">🔐 Cifra nomi ora</button>
+</div>
+
+<div class="app">
 <header>
   <div class="header-brand">
     <h1>Rapporto Congregazione <span>Bologna FR</span></h1>
-    <p>Gestione mesi · Esporta CSV e PDF · <span id="syncStatus" style="color:var(--muted)">⬤ locale</span></p>
+    <p>Gestione mesi · Esporta CSV e PDF · <span id="syncStatus" style="color:var(--muted)">⬤ locale</span>
+    <span id="cryptoStatus" style="margin-left:8px;font-size:.72rem"></span></p>
   </div>
   <div class="header-actions">
     <button class="btn btn-ghost" onclick="openConfig()" title="Configurazione">⚙</button>
-    <button class="btn btn-ghost editor-only" onclick="toggleAddForm()">＋ Membro</button>
-    <button class="btn btn-primary editor-only" id="saveBtn" onclick="saveAll()">☁ Salva</button>
+    <button class="btn btn-ghost" onclick="toggleAddForm()">＋ Membro</button>
+    <button class="btn btn-primary" id="saveBtn" onclick="saveAll()">☁ Salva</button>
     <button class="btn btn-ghost" onclick="loadAll()">↺ Sync</button>
     <button class="btn btn-success" onclick="exportCSV()">⬇ CSV</button>
     <button class="btn btn-warning" onclick="exportPDF()">⬇ PDF</button>
+    <button class="btn btn-ghost" onclick="doLogout()" title="Esci">🚪 Esci</button>
   </div>
 </header>
 
-<!-- AUTH BANNER -->
-<div class="auth-banner">
-  <div class="left">
-    <div class="auth-status">
-      <div class="auth-dot" id="authDot"></div>
-      <span id="authLabel">Modalità lettura</span>
-    </div>
-    <span style="color:var(--muted2)">·</span>
-    <span style="color:var(--muted);font-size:.74rem" id="authHint">Accedi come editore per modificare i dati e vedere i nomi</span>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center">
-    <span id="cryptoStatus" style="font-size:.72rem"></span>
-    <button class="lock-btn" id="authBtn" onclick="openAuthModal()">🔐 Accesso Editor</button>
-  </div>
-</div>
-
-<!-- AUTH MODAL — login éditeur = déchiffrement des noms -->
-<div class="modal-bg" id="modalAuth" style="z-index:1100">
-  <div class="modal">
-    <h2>🔐 Accesso Editor</h2>
-    <p>Inserisci la password per modificare i dati e visualizzare i nomi in chiaro.</p>
-    <div class="mfld">
-      <label>Password</label>
-      <input class="pwd-input" id="pwdInput" type="password" placeholder="••••••••"
-        onkeydown="if(event.key==='Enter') confirmAuth()">
-      <div class="pwd-error" id="pwdError">❌ Password errata — riprova</div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modalAuth')">Annulla</button>
-      <button class="btn btn-primary" onclick="confirmAuth()">Accedi</button>
-    </div>
-  </div>
-</div>
-
-<!-- MIGRATE MODAL -->
-<div class="modal-bg" id="modalMigrate" style="z-index:1100">
-  <div class="modal" style="width:460px">
-    <h2>🔐 Cifra nomi esistenti</h2>
-    <p>Cifra tutti i nomi attualmente in chiaro usando il tuo mot de passe editore. Dopo questa operazione, solo gli editori vedranno i nomi reali.</p>
-    <div class="key-warning">⚠️ Operazione irreversibile. Se dimentichi la password, i nomi saranno illeggibili. Assicurati che la password sia conservata in modo sicuro.</div>
-    <div class="info-box">La chiave di cifratura è derivata matematicamente dalla tua password (PBKDF2 + AES-256). Non viene mai trasmessa né salvata da nessuna parte.</div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modalMigrate')">Annulla</button>
-      <button class="btn btn-danger" onclick="confirmMigrate()">🔐 Cifra & Salva tutti i mesi</button>
-    </div>
-  </div>
-</div>
-
-<!-- YEAR BAR -->
 <div class="year-bar">
   <span class="year-label">Anno:</span>
   <div id="yearChips" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"></div>
   <button class="year-add-btn" onclick="openAddYear()">＋ Aggiungi Anno</button>
 </div>
 
-<!-- MONTH NAV -->
 <nav class="month-nav" id="monthNav"></nav>
 
 <main class="main">
@@ -296,7 +310,7 @@ select.ci option{background:var(--surface2)}
   <!-- ANNUALE -->
   <div class="section-panel" id="sec-annuale">
     <div style="display:flex;gap:8px;margin-bottom:12px">
-      <button class="btn btn-warning editor-only" onclick="fixAnnualYearTypo()">🔧 Correggi 2122 → 2022</button>
+      <button class="btn btn-warning" onclick="fixAnnualYearTypo()">🔧 Correggi 2122 → 2022</button>
     </div>
     <div class="tbl-wrap">
       <table>
@@ -323,7 +337,8 @@ select.ci option{background:var(--surface2)}
     <div id="cumulInfo" style="font-size:.75rem;color:var(--muted);margin-top:8px;font-style:italic"></div>
   </div>
 </main>
-</div>
+</div><!-- /.app -->
+</div><!-- /#appContent -->
 
 <!-- MODALS -->
 <div class="modal-bg" id="modalAddYear">
@@ -360,10 +375,17 @@ select.ci option{background:var(--surface2)}
   </div>
 </div>
 
-<div id="toast"></div>
-<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,11,16,.87);z-index:2000;align-items:center;justify-content:center;flex-direction:column;gap:16px">
-  <div style="width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite"></div>
-  <div id="loadingMsg" style="color:var(--text);font-size:.9rem;font-weight:600">Caricamento...</div>
+<!-- MIGRATE MODAL -->
+<div class="modal-bg" id="modalMigrate">
+  <div class="modal" style="width:460px">
+    <h2>🔐 Cifra nomi esistenti</h2>
+    <p>Cifra tutti i nomi attualmente in chiaro usando la tua password. Dopo questa operazione, solo chi conosce la password vedrà i nomi reali nel database.</p>
+    <div class="key-warning">⚠️ Operazione irreversibile senza la password. La chiave è derivata matematicamente dalla tua password — non viene mai trasmessa né salvata separatamente.</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalMigrate')">Annulla</button>
+      <button class="btn btn-danger" onclick="confirmMigrate()">🔐 Cifra & Salva tutti i mesi</button>
+    </div>
+  </div>
 </div>
 
 <!-- CONFIG MODAL -->
@@ -377,7 +399,7 @@ select.ci option{background:var(--surface2)}
     <div class="info-box">Apps Script → Déployer → Gérer les déploiements → copie l'URL Web App</div>
     <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
       <div style="font-size:.75rem;color:var(--muted);margin-bottom:10px;font-weight:600">🔐 Gestione cifratura nomi</div>
-      <button class="btn btn-ghost" style="font-size:.75rem" onclick="closeModal('modalConfig');openMigrateModal()">🔐 Cifra nomi esistenti (migrazione)</button>
+      <button class="btn btn-ghost" style="font-size:.75rem" onclick="closeModal('modalConfig');openMigrateModal()">🔐 Cifra nomi esistenti</button>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modalConfig')">Annulla</button>
@@ -386,26 +408,26 @@ select.ci option{background:var(--surface2)}
   </div>
 </div>
 
+<div id="toast"></div>
+<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,11,16,.87);z-index:2000;align-items:center;justify-content:center;flex-direction:column;gap:16px">
+  <div style="width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite"></div>
+  <div id="loadingMsg" style="color:var(--text);font-size:.9rem;font-weight:600">Caricamento...</div>
+</div>
+
 <script>
 // ══════════════════════════════════════════════════════
 // CRYPTO — AES-256 via PBKDF2 dérivé du mot de passe
 // ══════════════════════════════════════════════════════
-// La clé AES est dérivée du mot de passe éditeur côté navigateur.
-// Elle n'est jamais stockée, jamais transmise.
-// Salt fixe (public) : la sécurité repose sur la robustesse du mot de passe.
-const PBKDF2_SALT    = 'BolognaFR_Congregazione_Salt_v1';
-const PBKDF2_ITER    = 10000;
-const CRYPTO_FLAG    = 'names_encrypted_v1'; // localStorage flag
-const CRYPTO_SESSION = 'editor_crypto_key';  // sessionStorage
+const PBKDF2_SALT = 'BolognaFR_Congregazione_Salt_v1';
+const PBKDF2_ITER = 10000;
+const CRYPTO_FLAG = 'names_encrypted_v1';
+const SESSION_KEY = 'app_session_v10';
 
-let CRYPTO_KEY_WA = null; // clé dérivée (string hex), null si non connecté
+let CRYPTO_KEY_WA = null; // clé dérivée (hex), null si non connecté
 
 function deriveKey(password) {
-  // PBKDF2 → clé AES-256 (256 bits = 32 bytes)
   const key = CryptoJS.PBKDF2(password, PBKDF2_SALT, {
-    keySize: 256/32,
-    iterations: PBKDF2_ITER,
-    hasher: CryptoJS.algo.SHA256
+    keySize: 256/32, iterations: PBKDF2_ITER, hasher: CryptoJS.algo.SHA256
   });
   return key.toString(CryptoJS.enc.Hex);
 }
@@ -415,25 +437,21 @@ function encryptName(name) {
   try {
     const key = CryptoJS.enc.Hex.parse(CRYPTO_KEY_WA);
     return CryptoJS.AES.encrypt(name, key, {
-      mode: CryptoJS.mode.CBC,
-      padding: CryptoJS.pad.Pkcs7
+      mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7
     }).toString();
   } catch(e) { return name; }
 }
 
 function decryptName(cipher) {
   if (!cipher) return '';
-  // Pas chiffré (pas de marqueur CryptoJS) → retourne tel quel
-  if (!cipher.includes('U2FsdGVkX')) return cipher;
+  if (!cipher.includes('U2FsdGVkX')) return cipher; // pas chiffré
   if (!CRYPTO_KEY_WA) return '🔒 [cifrato]';
   try {
     const key = CryptoJS.enc.Hex.parse(CRYPTO_KEY_WA);
     const bytes = CryptoJS.AES.decrypt(cipher, key, {
-      mode: CryptoJS.mode.CBC,
-      padding: CryptoJS.pad.Pkcs7
+      mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7
     });
-    const plain = bytes.toString(CryptoJS.enc.Utf8);
-    return plain || '🔒 [cifrato]';
+    return bytes.toString(CryptoJS.enc.Utf8) || '🔒 [cifrato]';
   } catch(e) { return '🔒 [cifrato]'; }
 }
 
@@ -442,8 +460,7 @@ function namesAreEncrypted() {
 }
 
 function displayName(rawNome) {
-  if (namesAreEncrypted()) return decryptName(rawNome);
-  return rawNome || '';
+  return namesAreEncrypted() ? decryptName(rawNome) : (rawNome || '');
 }
 
 function updateCryptoStatus() {
@@ -451,34 +468,20 @@ function updateCryptoStatus() {
   if (!el) return;
   if (!namesAreEncrypted()) {
     el.textContent = '🔓 nomi in chiaro';
-    el.style.color = 'var(--muted)';
-  } else if (CRYPTO_KEY_WA) {
-    el.textContent = '🔓 nomi decifrati';
-    el.style.color = 'var(--accent3)';
+    el.style.color = 'var(--accent4)';
   } else {
-    el.textContent = '🔒 nomi cifrati';
-    el.style.color = 'var(--accent2)';
+    el.textContent = '🔐 nomi cifrati';
+    el.style.color = 'var(--accent3)';
   }
 }
 
-// Migration : chiffre tous les noms en clair dans tous les mois
-function openMigrateModal() {
-  if (!IS_EDITOR) {
-    toast('🔐 Accedi come editor prima di cifrare', 'var(--accent4)', '#1a0a00');
-    return;
-  }
-  openModal('modalMigrate');
-}
+function openMigrateModal() { openModal('modalMigrate'); }
 
 function confirmMigrate() {
-  if (!IS_EDITOR || !CRYPTO_KEY_WA) {
-    toast('Errore: non sei editor o chiave non disponibile', 'var(--accent2)', '#fff');
-    return;
-  }
+  if (!CRYPTO_KEY_WA) { toast('Errore: sessione scaduta, riaccedi', 'var(--accent2)', '#fff'); return; }
   let count = 0;
   Object.keys(data.months).forEach(ms => {
     (data.months[ms].members || []).forEach(m => {
-      // Chiffre seulement si pas déjà chiffré
       if (m.nome && !m.nome.includes('U2FsdGVkX')) {
         m.nome = encryptName(m.nome);
         count++;
@@ -487,10 +490,121 @@ function confirmMigrate() {
   });
   localStorage.setItem(CRYPTO_FLAG, '1');
   closeModal('modalMigrate');
+  hideMigrateBanner();
   renderAll();
   updateCryptoStatus();
   saveAll();
   toast(`${count} nomi cifrati e salvati ✓`, 'var(--accent3)', '#022c22');
+}
+
+function showMigrateBannerIfNeeded() {
+  const banner = document.getElementById('migrateBanner');
+  if (!namesAreEncrypted()) {
+    banner.style.display = 'flex';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+function hideMigrateBanner() {
+  document.getElementById('migrateBanner').style.display = 'none';
+}
+
+// ══════════════════════════════════════════════════════
+// AUTH — login obligatoire, une seule session
+// ══════════════════════════════════════════════════════
+let IS_AUTHENTICATED = false;
+let EDITOR_PASSWORD_STORED = ''; // mot de passe en clair pour la session
+
+function getSession() {
+  try {
+    const s = sessionStorage.getItem(SESSION_KEY);
+    if (!s) return null;
+    const obj = JSON.parse(s);
+    if (Date.now() > obj.expires) { sessionStorage.removeItem(SESSION_KEY); return null; }
+    return obj;
+  } catch(e) { return null; }
+}
+
+function setSession(pwd, cryptoKey) {
+  const expires = Date.now() + 8 * 60 * 60 * 1000; // 8h
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires, cryptoKey }));
+  localStorage.setItem('editor_pwd', pwd);
+}
+
+function clearSession() {
+  sessionStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem('editor_pwd');
+  CRYPTO_KEY_WA = null;
+  IS_AUTHENTICATED = false;
+}
+
+async function doLogin() {
+  const pwd = document.getElementById('loginPwd').value.trim();
+  if (!pwd) return;
+
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginError');
+  const spin = document.getElementById('loginSpinner');
+
+  err.style.display = 'none';
+  btn.disabled = true;
+  spin.style.display = 'block';
+
+  if (!SCRIPT_URL) {
+    // Pas encore configuré : on accepte n'importe quel mot de passe
+    // pour accéder à la config, mais on prévient
+    spin.style.display = 'none';
+    btn.disabled = false;
+    activateSession(pwd);
+    toast('⚙ Configura prima l\'URL Google Sheets', 'var(--accent4)', '#1a0a00');
+    openConfig();
+    return;
+  }
+
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=verifyPassword&pwd=' + encodeURIComponent(pwd), {
+      method: 'GET', redirect: 'follow'
+    });
+    const json = await res.json();
+    spin.style.display = 'none';
+    btn.disabled = false;
+
+    if (json.ok && json.authorized) {
+      activateSession(pwd);
+    } else {
+      err.style.display = 'block';
+      document.getElementById('loginPwd').value = '';
+      document.getElementById('loginPwd').focus();
+    }
+  } catch(e) {
+    spin.style.display = 'none';
+    btn.disabled = false;
+    err.style.display = 'block';
+    err.textContent = '❌ Errore connessione — ' + e.message;
+  }
+}
+
+function activateSession(pwd) {
+  IS_AUTHENTICATED = true;
+  EDITOR_PASSWORD_STORED = pwd;
+  CRYPTO_KEY_WA = deriveKey(pwd);
+  setSession(pwd, CRYPTO_KEY_WA);
+
+  // Masque le login, affiche l'app
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appContent').style.display = 'block';
+
+  // Charge les données
+  initApp();
+}
+
+function doLogout() {
+  if (!confirm('Uscire dall\'applicazione?')) return;
+  clearSession();
+  CRYPTO_KEY_WA = null;
+  IS_AUTHENTICATED = false;
+  // Reload propre
+  window.location.reload();
 }
 
 // ══════════════════════════════════════════════════════
@@ -533,7 +647,8 @@ function getYears(){
 }
 function getMonthsForYear(y){ return Object.keys(data.months).filter(k=>k.startsWith(y+'-')).sort(); }
 function sortMembers(members){
-  return [...members].sort((a,b)=>displayName(a.nome).toLowerCase().localeCompare(displayName(b.nome).toLowerCase(),'it'));
+  return [...members].sort((a,b)=>
+    displayName(a.nome).toLowerCase().localeCompare(displayName(b.nome).toLowerCase(),'it'));
 }
 function emptyMonth(ms,membersToCopy){
   return {
@@ -547,10 +662,8 @@ function emptyMonth(ms,membersToCopy){
     ],
     presenze:{
       settimane:[
-        {settimana:'Settimana 1',infra:null,wkd:null},
-        {settimana:'Settimana 2',infra:null,wkd:null},
-        {settimana:'Settimana 3',infra:null,wkd:null},
-        {settimana:'Settimana 4',infra:null,wkd:null},
+        {settimana:'Settimana 1',infra:null,wkd:null},{settimana:'Settimana 2',infra:null,wkd:null},
+        {settimana:'Settimana 3',infra:null,wkd:null},{settimana:'Settimana 4',infra:null,wkd:null},
         {settimana:'Settimana 5',infra:null,wkd:null},
       ],
       totale_infra:0,totale_wkd:0,media_infra:0,media_wkd:0
@@ -562,7 +675,7 @@ function emptyMonth(ms,membersToCopy){
 // YEAR BAR
 // ══════════════════════════════════════════════════════
 function buildYearBar(){
-  const years=getYears(); const div=document.getElementById('yearChips'); div.innerHTML='';
+  const years=getYears();const div=document.getElementById('yearChips');div.innerHTML='';
   years.forEach(y=>{
     const chip=document.createElement('div');
     chip.className='year-chip'+(y===currentYear?' active':'');
@@ -604,7 +717,7 @@ function deleteYear(y){
 // MONTH NAV
 // ══════════════════════════════════════════════════════
 function buildMonthNav(){
-  const nav=document.getElementById('monthNav'); nav.innerHTML='';
+  const nav=document.getElementById('monthNav');nav.innerHTML='';
   const months=getMonthsForYear(currentYear);
   months.forEach(ms=>{
     const div=document.createElement('div');
@@ -635,7 +748,7 @@ function confirmAddMonth(){
   toast(`${monthLabel(ms)} aggiunto`);
 }
 function deleteMonth(ms){
-  if(getMonthsForYear(currentYear).length<=1){alert('Non puoi eliminare l\'unico mese di un anno.');return;}
+  if(getMonthsForYear(currentYear).length<=1){alert('Non puoi eliminare l\'unico mese.');return;}
   if(!confirm(`Eliminare ${monthLabel(ms)}?`)) return;
   delete data.months[ms];
   const remaining=getMonthsForYear(currentYear).sort();
@@ -650,9 +763,7 @@ function deleteMonth(ms){
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.addEventListener('click',e=>{
-  if(e.target.classList.contains('modal-bg')&&
-     e.target.id!=='modalAuth'&&
-     e.target.id!=='modalMigrate') e.target.classList.remove('open');
+  if(e.target.classList.contains('modal-bg')&&e.target.id!=='modalMigrate') e.target.classList.remove('open');
 });
 
 // ══════════════════════════════════════════════════════
@@ -721,7 +832,7 @@ function updateFilterCount(){
 }
 
 // ══════════════════════════════════════════════════════
-// MEMBRI (tri alphabétique)
+// MEMBRI
 // ══════════════════════════════════════════════════════
 function renderMembri(){
   const visible=sortMembers(getFilteredMembers());
@@ -744,24 +855,20 @@ function renderMembri(){
   });
 }
 function updNome(ms,id,val){
-  if(!IS_EDITOR){toast("🔐 Accedi come editor","var(--accent4)","#1a0a00");return;}
   const m=data.months[ms].members.find(x=>x.id===id);
   if(m){m.nome=namesAreEncrypted()?encryptName(val):val;renderStats();renderTotali();toast();}
 }
 function upd(ms,id,key,val){
-  if(!IS_EDITOR){toast("🔐 Accedi come editor","var(--accent4)","#1a0a00");applyAuthState();return;}
   const m=data.months[ms].members.find(x=>x.id===id);
   if(m){m[key]=val;renderStats();renderTotali();toast();}
 }
 function delMember(ms,id){
-  if(!IS_EDITOR){toast('🔐 Accedi come editor','var(--accent4)','#1a0a00');return;}
   if(!confirm('Eliminare questo membro?')) return;
   data.months[ms].members=data.months[ms].members.filter(x=>x.id!==id);
   renderAll();toast('Eliminato','var(--accent2)','#fff');
 }
 function toggleAddForm(){document.getElementById('addForm').classList.toggle('open');}
 function addMember(){
-  if(!IS_EDITOR){toast('🔐 Accedi come editor','var(--accent4)','#1a0a00');return;}
   const nomeRaw=document.getElementById('nw-nome').value.trim();
   if(!nomeRaw){alert('Il nome è obbligatorio');return;}
   data.months[currentMonth].members.push({
@@ -780,7 +887,7 @@ function addMember(){
 }
 
 // ══════════════════════════════════════════════════════
-// TOTALI (auto-calcolati)
+// TOTALI AUTO
 // ══════════════════════════════════════════════════════
 const ROLE_TO_CAT={'Proclamatore':'Proclamatori','Pioniere Regolare':'Pion. Regolari','Pioniere Ausiliare':'Pion. Ausiliari','SFTS':'SFTS'};
 function computeAutoTotals(members){
@@ -823,10 +930,7 @@ function renderTotali(){
       <td style="font-family:'DM Mono',monospace;padding:10px 12px;color:var(--accent)">${ts}</td>
     </tr>`;
 }
-function updTot(ms,idx,key,val){
-  if(!IS_EDITOR){toast("🔐 Accedi come editor","var(--accent4)","#1a0a00");return;}
-  data.months[ms].totali_categoria[idx][key]=val;renderTotali();toast();
-}
+function updTot(ms,idx,key,val){data.months[ms].totali_categoria[idx][key]=val;renderTotali();toast();}
 
 // ══════════════════════════════════════════════════════
 // PRESENZE
@@ -850,7 +954,6 @@ function renderPresenze(){
   grid.appendChild(sum);
 }
 function updPres(ms,idx,key,val){
-  if(!IS_EDITOR){toast("🔐 Accedi come editor","var(--accent4)","#1a0a00");return;}
   data.months[ms].presenze.settimane[idx][key]=val;
   const p=data.months[ms].presenze;
   p.totale_infra=p.settimane.reduce((s,x)=>s+(x.infra||0),0);
@@ -879,25 +982,20 @@ function renderAnnual(){
     tbody.appendChild(tr);
   });
 }
-function updAnnual(i,key,val){
-  if(!IS_EDITOR){toast("🔐 Accedi come editor","var(--accent4)","#1a0a00");return;}
-  data.annual[i][key]=val;toast();
-}
+function updAnnual(i,key,val){data.annual[i][key]=val;toast();}
 function fixAnnualYearTypo(){
-  if(!IS_EDITOR){toast("🔐 Accedi come editor","var(--accent4)","#1a0a00");return;}
   let count=0;
   data.annual.forEach(r=>{if(typeof r.mese==='string'&&r.mese.startsWith('2122-')){r.mese='2022-'+r.mese.slice(5);count++;}});
   renderAnnual();toast(`${count} righe corrette (2122→2022)`);
 }
 
 // ══════════════════════════════════════════════════════
-// CUMUL ORE — Pionnieri Regolari, anno di servizio
+// CUMUL ORE
 // ══════════════════════════════════════════════════════
 function getServiceYears(){
   const s=new Set();
   Object.keys(data.months).forEach(ms=>{
-    const[y,m]=ms.split('-').map(Number);
-    s.add(m>=9?y:y-1);
+    const[y,m]=ms.split('-').map(Number);s.add(m>=9?y:y-1);
   });
   return [...s].sort();
 }
@@ -920,10 +1018,7 @@ function updateCumulMonthSelectors(){
   const opts=avail.map(ms=>`<option value="${ms}">${monthLabel(ms)}</option>`).join('');
   document.getElementById('cumulDa').innerHTML=opts;
   document.getElementById('cumulA').innerHTML=opts;
-  if(avail.length){
-    document.getElementById('cumulDa').value=avail[0];
-    document.getElementById('cumulA').value=avail[avail.length-1];
-  }
+  if(avail.length){document.getElementById('cumulDa').value=avail[0];document.getElementById('cumulA').value=avail[avail.length-1];}
   renderCumul();
 }
 function renderCumul(){
@@ -932,14 +1027,11 @@ function renderCumul(){
   const search=document.getElementById('cumulSearch').value.toLowerCase().trim();
   if(msFrom>msTo){
     document.getElementById('cumulInfo').textContent='⚠️ Il mese di inizio deve essere prima del mese di fine.';
-    document.getElementById('cumulBody').innerHTML='';
-    return;
+    document.getElementById('cumulBody').innerHTML='';return;
   }
   const sy=+document.getElementById('cumulAnnoSel').value;
   const range=getServiceYearMonths(sy).filter(ms=>ms>=msFrom&&ms<=msTo);
   document.getElementById('cumulColHeader').textContent=`Ore cumulate (${monthLabel(msFrom)} → ${monthLabel(msTo)})`;
-
-  // Agrège par id de pionnier
   const map={};
   range.forEach(ms=>{
     const md=data.months[ms];if(!md) return;
@@ -949,17 +1041,14 @@ function renderCumul(){
       if(!isNaN(o)&&o>0){map[m.id].totalOre+=o;map[m.id].mesiConOre++;}
     });
   });
-
   let rows=Object.entries(map).map(([id,d])=>({
-    id,nome:displayName(d.nome_raw),gruppo:d.gruppo,
-    totalOre:d.totalOre,mesiConOre:d.mesiConOre
+    id,nome:displayName(d.nome_raw),gruppo:d.gruppo,totalOre:d.totalOre,mesiConOre:d.mesiConOre
   }));
   if(search) rows=rows.filter(r=>r.nome.toLowerCase().includes(search));
   rows.sort((a,b)=>a.nome.localeCompare(b.nome,'it'));
-
   const tbody=document.getElementById('cumulBody');tbody.innerHTML='';
   if(!rows.length){
-    tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Nessun Pioniere Regolare nel periodo selezionato.</td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Nessun Pioniere Regolare nel periodo.</td></tr>`;
   } else {
     rows.forEach((r,i)=>{
       const media=r.mesiConOre>0?(r.totalOre/r.mesiConOre).toFixed(1):'-';
@@ -987,14 +1076,13 @@ function switchSec(sec,el){
   currentSec=sec;
   document.querySelectorAll('.section-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.sec-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('sec-'+sec).classList.add('active');
-  el.classList.add('active');
+  document.getElementById('sec-'+sec).classList.add('active');el.classList.add('active');
   if(sec==='annuale') renderAnnual();
   if(sec==='cumul') buildCumulSelectors();
 }
 
 // ══════════════════════════════════════════════════════
-// EXPORT CSV / PDF
+// EXPORT CSV / PDF — noms déchiffrés dans les exports
 // ══════════════════════════════════════════════════════
 function exportCSV(){
   const ms=currentMonth;const md=data.months[ms];
@@ -1052,103 +1140,6 @@ function exportPDF(){
 function dl(name,content,mime){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type:mime}));a.download=name;a.click();}
 
 // ══════════════════════════════════════════════════════
-// AUTH SYSTEM — login éditeur = déchiffrement des noms
-// ══════════════════════════════════════════════════════
-let IS_EDITOR=false;
-const _authSessionKey='editor_session_v9';
-
-function isEditorSession(){
-  const stored=localStorage.getItem(_authSessionKey);
-  if(!stored) return false;
-  try{
-    const{expires,cryptoKey}=JSON.parse(stored);
-    if(Date.now()<expires){
-      if(cryptoKey) CRYPTO_KEY_WA=cryptoKey;
-      return true;
-    }
-    localStorage.removeItem(_authSessionKey);
-  }catch(e){}
-  return false;
-}
-function setEditorSession(pwd){
-  const expires=Date.now()+8*60*60*1000;
-  const cryptoKey=deriveKey(pwd);
-  CRYPTO_KEY_WA=cryptoKey;
-  // On stocke la clé dérivée (pas le mot de passe) en localStorage pour 8h
-  localStorage.setItem(_authSessionKey,JSON.stringify({expires,cryptoKey}));
-  localStorage.setItem('editor_pwd',pwd);
-}
-function clearEditorSession(){
-  localStorage.removeItem(_authSessionKey);
-  localStorage.removeItem('editor_pwd');
-  CRYPTO_KEY_WA=null;
-}
-
-function applyAuthState(){
-  const dot=document.getElementById('authDot');
-  const label=document.getElementById('authLabel');
-  const hint=document.getElementById('authHint');
-  const btn=document.getElementById('authBtn');
-  if(IS_EDITOR){
-    dot.classList.add('editor');
-    label.textContent='✏️ Modalità Editor';label.style.color='var(--accent3)';
-    hint.textContent='Puoi modificare i dati e vedere i nomi in chiaro';
-    btn.textContent='🔓 Esci Editor';btn.onclick=logoutEditor;
-    document.querySelectorAll('.editor-only').forEach(el=>el.classList.remove('edit-blocked'));
-    document.querySelectorAll('.ci,.icon-btn').forEach(el=>el.classList.remove('edit-blocked'));
-  }else{
-    dot.classList.remove('editor');
-    label.textContent='👁 Modalità lettura';label.style.color='';
-    hint.textContent=namesAreEncrypted()?'I nomi sono cifrati — accedi come editor per vederli':'Accedi come editore per modificare i dati';
-    btn.textContent='🔐 Accesso Editor';btn.onclick=openAuthModal;
-    document.querySelectorAll('.editor-only').forEach(el=>el.classList.add('edit-blocked'));
-    document.querySelectorAll('.ci,.icon-btn').forEach(el=>el.classList.add('edit-blocked'));
-  }
-  updateCryptoStatus();
-}
-
-function openAuthModal(){
-  document.getElementById('pwdInput').value='';
-  document.getElementById('pwdError').style.display='none';
-  openModal('modalAuth');
-  setTimeout(()=>document.getElementById('pwdInput').focus(),100);
-}
-
-async function confirmAuth(){
-  if(!SCRIPT_URL){alert('Configura prima l\'URL Google Sheets (⚙)');closeModal('modalAuth');openConfig();return;}
-  const pwd=document.getElementById('pwdInput').value;
-  if(!pwd){document.getElementById('pwdError').style.display='block';document.getElementById('pwdError').textContent='❌ Inserisci la password';return;}
-  showLoading('Verifica password...');
-  try{
-    const res=await fetch(SCRIPT_URL+'?action=verifyPassword&pwd='+encodeURIComponent(pwd),{method:'GET',redirect:'follow'});
-    const json=await res.json();
-    hideLoading();
-    if(json.ok&&json.authorized){
-      IS_EDITOR=true;
-      setEditorSession(pwd); // dérive la clé AES depuis le mot de passe
-      closeModal('modalAuth');
-      applyAuthState();
-      renderAll(); // re-render avec noms déchiffrés
-      toast('Accesso editor attivato — nomi decifrati ✓','var(--accent3)','#022c22');
-    }else{
-      document.getElementById('pwdError').style.display='block';
-      document.getElementById('pwdError').textContent='❌ Password errata — riprova';
-      document.getElementById('pwdInput').value='';
-      document.getElementById('pwdInput').focus();
-    }
-  }catch(err){
-    hideLoading();
-    document.getElementById('pwdError').style.display='block';
-    document.getElementById('pwdError').textContent='❌ Errore connessione: '+err.message;
-  }
-}
-
-function logoutEditor(){
-  IS_EDITOR=false;clearEditorSession();applyAuthState();renderAll();
-  toast('Uscito dalla modalità editor','var(--accent4)','#1a0a00');
-}
-
-// ══════════════════════════════════════════════════════
 // GOOGLE SHEETS
 // ══════════════════════════════════════════════════════
 let SCRIPT_URL=localStorage.getItem('gs_script_url')||'';
@@ -1190,7 +1181,6 @@ async function loadAll(){
   }
   hideLoading();
 }
-
 async function saveAll(){
   if(!SCRIPT_URL){openConfig();return;}
   const btn=document.getElementById('saveBtn');
@@ -1214,28 +1204,13 @@ async function saveAll(){
   btn.textContent='☁ Salva';btn.disabled=false;hideLoading();
 }
 
-function checkConfig(){
-  if(SCRIPT_URL){setSyncStatus('⬤ configurato','var(--muted)');}
-  else{
-    setSyncStatus('⚙ configura URL','var(--accent4)');
-    setTimeout(()=>{const el=document.getElementById('syncStatus');if(el){el.style.cursor='pointer';el.onclick=openConfig;}},500);
-  }
-}
-
 // ══════════════════════════════════════════════════════
-// RENDER ALL + INIT
+// RENDER ALL + INIT APP (après login)
 // ══════════════════════════════════════════════════════
 function renderAll(){buildGroupChips();renderStats();renderMembri();renderTotali();renderPresenze();}
 
-(async function init(){
-  // 1. Restore session éditeur (inclut la clé dérivée)
-  if(isEditorSession()){ IS_EDITOR=true; }
-
-  checkConfig();
-  applyAuthState();
+async function initApp(){
   updateCryptoStatus();
-
-  // 2. Charge depuis Google Sheets
   if(SCRIPT_URL){
     try{ await loadAll(); }
     catch(e){ setSyncStatus('⬤ locale (errore sync)','var(--muted)'); }
@@ -1247,6 +1222,29 @@ function renderAll(){buildGroupChips();renderStats();renderMembri();renderTotali
       if(months.length) currentMonth=months[0];
     }
     buildYearBar();buildMonthNav();renderAll();
+  }
+  // Affiche le banner de migration si noms pas encore chiffrés
+  showMigrateBannerIfNeeded();
+}
+
+// ══════════════════════════════════════════════════════
+// BOOT — vérifie session existante ou affiche le login
+// ══════════════════════════════════════════════════════
+(function boot(){
+  const session = getSession();
+  if(session){
+    // Session encore valide : accès direct sans re-login
+    IS_AUTHENTICATED = true;
+    CRYPTO_KEY_WA = session.cryptoKey;
+    const pwd = localStorage.getItem('editor_pwd') || '';
+    if(pwd && !CRYPTO_KEY_WA) CRYPTO_KEY_WA = deriveKey(pwd);
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appContent').style.display = 'block';
+    initApp();
+  } else {
+    // Affiche le login
+    document.getElementById('loginScreen').style.display = 'flex';
+    setTimeout(()=>document.getElementById('loginPwd').focus(), 300);
   }
 })();
 </script>
