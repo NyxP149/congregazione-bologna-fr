@@ -1167,7 +1167,7 @@ function saveConfig(){
   const url=document.getElementById('configScriptUrl').value.trim();
   if(!url.startsWith('https://script.google.com')){alert('URL non valida');return;}
   SCRIPT_URL=url;localStorage.setItem('gs_script_url',url);
-  closeModal('modalConfig');toast('URL configurata ✓');setSyncStatus('⬤ configurato','var(--accent3)');loadAll();
+  closeModal('modalConfig');toast('URL configurata ✓');setSyncStatus('⬤ configurato','var(--accent3)');if(IS_AUTHENTICATED) loadAll();
 }
 function openConfig(){document.getElementById('configScriptUrl').value=SCRIPT_URL;openModal('modalConfig');}
 
