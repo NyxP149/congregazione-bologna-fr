@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rapporto Congregazione – Bologna FR</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" integrity="sha384-fCAW/rDWORTbQXSiB7mOg0QtQ5c+r0f544y6XoKjuVva0nMBlCpNUjiFeG5iMdS3" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js" integrity="sha384-S3wQ/l0OsbJoFeJC81UIr3JOlx/OzNJpRt1bV+yhpWQxPAahfpQtpxBSfn+Isslc" crossorigin="anonymous"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 :root{
@@ -418,28 +418,36 @@ select.ci option{background:var(--surface2)}
 // ══════════════════════════════════════════════════════
 // CRYPTO — AES-256 via PBKDF2 dérivé du mot de passe
 // ══════════════════════════════════════════════════════
-const PBKDF2_SALT = 'BolognaFR_Congregazione_Salt_v1';
-const PBKDF2_ITER = 10000;
-const CRYPTO_FLAG = 'names_encrypted_v1';
-const SESSION_KEY = 'app_session_v10';
+const PBKDF2_SALT = 'BolognaFR_Congregazione_Salt_v2';
+const PBKDF2_ITER = 600000;
+const CRYPTO_FLAG = 'names_encrypted_v2';
+const SESSION_KEY = 'app_session_v11';
 
-let CRYPTO_KEY_WA = null; // clé dérivée (hex), null si non connecté
+let CRYPTO_KEY_WA = null; // 128 hex = 32 octets clé AES + 32 octets clé HMAC, null si non connecté
 
-function deriveKey(password) {
-  const key = CryptoJS.PBKDF2(password, PBKDF2_SALT, {
-    keySize: 256/32, iterations: PBKDF2_ITER, hasher: CryptoJS.algo.SHA256
-  });
-  return key.toString(CryptoJS.enc.Hex);
+// PBKDF2-SHA256 (WebCrypto) -> 64 octets : [0..31] AES-256, [32..63] HMAC-SHA256
+async function deriveKey(password) {
+  const enc = new TextEncoder();
+  const base = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: enc.encode(PBKDF2_SALT), iterations: PBKDF2_ITER, hash: 'SHA-256' }, base, 512);
+  return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+// Format : v2:<iv hex>:<texte chiffré base64>:<hmac hex>  (IV aléatoire, chiffrer puis authentifier)
+function isCipher(v) { return typeof v === 'string' && v.startsWith('v2:'); }
+
 function encryptName(name) {
-  if (!CRYPTO_KEY_WA || !name) return name;
-  try {
-    const key = CryptoJS.enc.Hex.parse(CRYPTO_KEY_WA);
-    return CryptoJS.AES.encrypt(name, key, {
-      mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7
-    }).toString();
-  } catch(e) { return name; }
+  if (!name || isCipher(name)) return name;
+  if (!CRYPTO_KEY_WA) throw new Error('Chiave di cifratura non disponibile');
+  const key = CryptoJS.enc.Hex.parse(CRYPTO_KEY_WA.slice(0, 64));
+  const macKey = CryptoJS.enc.Hex.parse(CRYPTO_KEY_WA.slice(64));
+  const iv = CryptoJS.lib.WordArray.random(16);
+  const ct = CryptoJS.AES.encrypt(name, key, {
+    iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7
+  }).ciphertext;
+  const body = 'v2:' + iv.toString(CryptoJS.enc.Hex) + ':' + CryptoJS.enc.Base64.stringify(ct);
+  return body + ':' + CryptoJS.HmacSHA256(body, macKey).toString(CryptoJS.enc.Hex);
 }
 
 function decryptName(cipher) {
@@ -447,15 +455,19 @@ function decryptName(cipher) {
   if (!isCipher(cipher)) return cipher; // pas chiffré
   if (!CRYPTO_KEY_WA) return '🔒 [cifrato]';
   try {
-    const key = CryptoJS.enc.Hex.parse(CRYPTO_KEY_WA);
-    const bytes = CryptoJS.AES.decrypt(cipher, key, {
-      mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7
+    const parts = cipher.split(':');
+    if (parts.length !== 4) return '🔒 [cifrato]';
+    const body = parts[0] + ':' + parts[1] + ':' + parts[2];
+    const macKey = CryptoJS.enc.Hex.parse(CRYPTO_KEY_WA.slice(64));
+    if (CryptoJS.HmacSHA256(body, macKey).toString(CryptoJS.enc.Hex) !== parts[3]) return '🔒 [cifrato]';
+    const key = CryptoJS.enc.Hex.parse(CRYPTO_KEY_WA.slice(0, 64));
+    const params = CryptoJS.lib.CipherParams.create({ ciphertext: CryptoJS.enc.Base64.parse(parts[2]) });
+    const bytes = CryptoJS.AES.decrypt(params, key, {
+      iv: CryptoJS.enc.Hex.parse(parts[1]), mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7
     });
     return bytes.toString(CryptoJS.enc.Utf8) || '🔒 [cifrato]';
   } catch(e) { return '🔒 [cifrato]'; }
 }
-
-function isCipher(v) { return typeof v === 'string' && v.includes('U2FsdGVkX'); }
 
 function namesAreEncrypted() {
   if (localStorage.getItem(CRYPTO_FLAG) === '1') return true;
@@ -492,7 +504,7 @@ function confirmMigrate() {
   let count = 0;
   Object.keys(data.months).forEach(ms => {
     (data.months[ms].members || []).forEach(m => {
-      if (m.nome && !m.nome.includes('U2FsdGVkX')) {
+      if (m.nome && !isCipher(m.nome)) {
         m.nome = encryptName(m.nome);
         count++;
       }
@@ -530,7 +542,7 @@ function getSession() {
     const s = sessionStorage.getItem(SESSION_KEY);
     if (!s) return null;
     const obj = JSON.parse(s);
-    if (Date.now() > obj.expires) { sessionStorage.removeItem(SESSION_KEY); return null; }
+    if (!obj.cryptoKey || obj.cryptoKey.length !== 128 || Date.now() > obj.expires) { sessionStorage.removeItem(SESSION_KEY); return null; }
     return obj;
   } catch(e) { return null; }
 }
@@ -582,7 +594,7 @@ async function doLogin() {
     btn.disabled = false;
 
     if (json.ok && json.authorized) {
-      activateSession(pwd);
+      await activateSession(pwd);
     } else {
       err.style.display = 'block';
       document.getElementById('loginPwd').value = '';
@@ -596,10 +608,10 @@ async function doLogin() {
   }
 }
 
-function activateSession(pwd) {
+async function activateSession(pwd) {
   IS_AUTHENTICATED = true;
   EDITOR_PASSWORD_STORED = pwd;
-  CRYPTO_KEY_WA = deriveKey(pwd);
+  CRYPTO_KEY_WA = await deriveKey(pwd);
   setSession(pwd, CRYPTO_KEY_WA);
 
   // Masque le login, affiche l'app
@@ -1261,7 +1273,6 @@ async function initApp(){
     CRYPTO_KEY_WA = session.cryptoKey;
     localStorage.removeItem('editor_pwd');
     EDITOR_PASSWORD_STORED = session.pwd || '';
-    if(EDITOR_PASSWORD_STORED && !CRYPTO_KEY_WA) CRYPTO_KEY_WA = deriveKey(EDITOR_PASSWORD_STORED);
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('appContent').style.display = 'block';
     initApp();
