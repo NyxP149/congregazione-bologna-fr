@@ -1162,7 +1162,7 @@ function dl(name,content,mime){const a=document.createElement('a');a.href=URL.cr
 // URL du web app Apps Script (/exec) : colle-la ici pour que tous les navigateurs l'aient d'office.
 // Elle n'est pas secrète : toutes les actions exigent le mot de passe côté serveur.
 const DEFAULT_SCRIPT_URL='https://script.google.com/macros/s/AKfycbxXuH21y0ny-hLxoccv7FD-zF3EtaYoKdIYCdxTmnAYP-S_UEERGkF9mNr4jQwV80Ma_g/exec';
-let SCRIPT_URL=localStorage.getItem('gs_script_url')||DEFAULT_SCRIPT_URL;
+let SCRIPT_URL=DEFAULT_SCRIPT_URL||localStorage.getItem('gs_script_url')||'';
 function setSyncStatus(msg,col='var(--accent3)'){const el=document.getElementById('syncStatus');if(el){el.textContent=msg;el.style.color=col;}}
 function showLoading(msg='Caricamento...'){document.getElementById('loadingMsg').textContent=msg;document.getElementById('loadingOverlay').style.display='flex';}
 function hideLoading(){document.getElementById('loadingOverlay').style.display='none';}
