@@ -444,7 +444,7 @@ function encryptName(name) {
 
 function decryptName(cipher) {
   if (!cipher) return '';
-  if (!cipher.includes('U2FsdGVkX')) return cipher; // pas chiffré
+  if (!isCipher(cipher)) return cipher; // pas chiffré
   if (!CRYPTO_KEY_WA) return '🔒 [cifrato]';
   try {
     const key = CryptoJS.enc.Hex.parse(CRYPTO_KEY_WA);
@@ -455,12 +455,22 @@ function decryptName(cipher) {
   } catch(e) { return '🔒 [cifrato]'; }
 }
 
+function isCipher(v) { return typeof v === 'string' && v.includes('U2FsdGVkX'); }
+
 function namesAreEncrypted() {
-  return localStorage.getItem(CRYPTO_FLAG) === '1';
+  if (localStorage.getItem(CRYPTO_FLAG) === '1') return true;
+  // Le flag est local au navigateur : on le déduit aussi des données chargées
+  for (const ms of Object.keys(data.months)) {
+    if ((data.months[ms].members || []).some(m => isCipher(m.nome))) {
+      localStorage.setItem(CRYPTO_FLAG, '1');
+      return true;
+    }
+  }
+  return false;
 }
 
 function displayName(rawNome) {
-  return namesAreEncrypted() ? decryptName(rawNome) : (rawNome || '');
+  return decryptName(rawNome);
 }
 
 function updateCryptoStatus() {
@@ -527,13 +537,14 @@ function getSession() {
 
 function setSession(pwd, cryptoKey) {
   const expires = Date.now() + 8 * 60 * 60 * 1000; // 8h
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires, cryptoKey }));
-  localStorage.setItem('editor_pwd', pwd);
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires, cryptoKey, pwd }));
+  localStorage.removeItem('editor_pwd'); // nettoie l'ancien stockage persistant
 }
 
 function clearSession() {
   sessionStorage.removeItem(SESSION_KEY);
   localStorage.removeItem('editor_pwd');
+  EDITOR_PASSWORD_STORED = '';
   CRYPTO_KEY_WA = null;
   IS_AUTHENTICATED = false;
 }
@@ -555,15 +566,16 @@ async function doLogin() {
     // pour accéder à la config, mais on prévient
     spin.style.display = 'none';
     btn.disabled = false;
-    activateSession(pwd);
-    toast('⚙ Configura prima l\'URL Google Sheets', 'var(--accent4)', '#1a0a00');
+    err.textContent = '⚙ Configura prima l\'URL Google Sheets';
+    err.style.display = 'block';
     openConfig();
     return;
   }
 
   try {
-    const res = await fetch(SCRIPT_URL + '?action=verifyPassword&pwd=' + encodeURIComponent(pwd), {
-      method: 'GET', redirect: 'follow'
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST', headers: {'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action: 'verifyPassword', pwd }), redirect: 'follow'
     });
     const json = await res.json();
     spin.style.display = 'none';
@@ -624,7 +636,7 @@ const data = JSON.parse(JSON.stringify(RAW));
 // ══════════════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════════════
-function esc(v){ return (v??'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') }
+function esc(v){ return (v??'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;') }
 function monthLabel(ms){
   if(!ms||!ms.includes('-')) return ms||'';
   const [y,m]=ms.split('-');
@@ -1088,12 +1100,12 @@ function exportCSV(){
   const ms=currentMonth;const md=data.months[ms];
   let csv=`RAPPORTO MENSILE,${monthLabel(ms)}\n\n#,Nome,Ruolo,Gruppo,Ore,S.B.,Note\n`;
   sortMembers(md.members).forEach((m,i)=>{
-    csv+=`${i+1},"${displayName(m.nome)}","${m.ruolo}","${m.gruppo}","${m.ore}","${m.sb}","${m.note}"\n`;
+    csv+=`${i+1},${[displayName(m.nome),m.ruolo,m.gruppo,m.ore,m.sb,m.note].map(csvCell).join(',')}\n`;
   });
   csv+=`\nTotali per categoria\nRuolo,N° Proc.,Pub.,Video,Ore,V.U.,S.B.\n`;
-  md.totali_categoria.forEach(t=>{csv+=`"${t.ruolo}",${t.n_proc},${t.pub},${t.video},${t.ore},${t.vu},${t.sb}\n`;});
+  md.totali_categoria.forEach(t=>{csv+=`${csvCell(t.ruolo)},${t.n_proc},${t.pub},${t.video},${t.ore},${t.vu},${t.sb}\n`;});
   csv+=`\nPresenze Adunanze\nSettimana,Infrasettimanale,Weekend\n`;
-  md.presenze.settimane.forEach(s=>{csv+=`"${s.settimana}",${s.infra??''},${s.wkd??''}\n`;});
+  md.presenze.settimane.forEach(s=>{csv+=`${csvCell(s.settimana)},${s.infra??''},${s.wkd??''}\n`;});
   csv+=`Totale,${md.presenze.totale_infra},${md.presenze.totale_wkd}\nMedia,${md.presenze.media_infra},${md.presenze.media_wkd}\n`;
   dl(`rapporto_${ms}.csv`,csv,'text/csv');toast('CSV scaricato');
 }
@@ -1137,6 +1149,11 @@ function exportPDF(){
   for(let p=1;p<=pc;p++){doc.setPage(p);doc.setFontSize(7);doc.setTextColor(80,85,110);doc.text(`Pagina ${p} di ${pc}`,W/2,292,{align:'center'});doc.text('Rapporto Congregazione Bologna FR – Uso interno',mar,292);}
   doc.save(`rapporto_congregazione_${ms}.pdf`);toast('PDF scaricato');
 }
+function csvCell(v){
+  let t=(v??'').toString();
+  if(/^[=+@\t\r-]/.test(t)) t="'"+t; // évite l'interprétation en formule
+  return '"'+t.replace(/"/g,'""')+'"';
+}
 function dl(name,content,mime){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type:mime}));a.download=name;a.click();}
 
 // ══════════════════════════════════════════════════════
@@ -1158,7 +1175,10 @@ async function loadAll(){
   if(!SCRIPT_URL){openConfig();return;}
   showLoading('Caricamento da Google Sheets...');setSyncStatus('⟳ sync...','var(--accent4)');
   try{
-    const res=await fetch(SCRIPT_URL+'?action=loadAll',{redirect:'follow'});
+    const res=await fetch(SCRIPT_URL,{
+      method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'loadAll',pwd:EDITOR_PASSWORD_STORED||''}),redirect:'follow'
+    });
     if(!res.ok) throw new Error('HTTP '+res.status);
     const json=await res.json();
     if(!json.ok) throw new Error(json.error||'Erreur inconnue');
@@ -1187,10 +1207,10 @@ async function saveAll(){
   btn.textContent='☁ Salvataggio...';btn.disabled=true;
   setSyncStatus('⟳ salvataggio...','var(--accent4)');showLoading('Salvataggio su Google Sheets...');
   try{
-    const pwd=localStorage.getItem('editor_pwd')||'';
-    const res=await fetch(SCRIPT_URL+'?action=saveAll&pwd='+encodeURIComponent(pwd),{
+    const pwd=EDITOR_PASSWORD_STORED||'';
+    const res=await fetch(SCRIPT_URL,{
       method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({months:data.months,annual:data.annual}),redirect:'follow'
+      body:JSON.stringify({action:'saveAll',pwd,months:data.months,annual:data.annual}),redirect:'follow'
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
     const json=await res.json();
@@ -1236,8 +1256,9 @@ async function initApp(){
     // Session encore valide : accès direct sans re-login
     IS_AUTHENTICATED = true;
     CRYPTO_KEY_WA = session.cryptoKey;
-    const pwd = localStorage.getItem('editor_pwd') || '';
-    if(pwd && !CRYPTO_KEY_WA) CRYPTO_KEY_WA = deriveKey(pwd);
+    localStorage.removeItem('editor_pwd');
+    EDITOR_PASSWORD_STORED = session.pwd || '';
+    if(EDITOR_PASSWORD_STORED && !CRYPTO_KEY_WA) CRYPTO_KEY_WA = deriveKey(EDITOR_PASSWORD_STORED);
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('appContent').style.display = 'block';
     initApp();
